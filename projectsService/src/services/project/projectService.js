@@ -2,7 +2,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
-import { putItem, getItem, scanTable, updateItem } from './dynamoService.js';
+import {
+  putItem,
+  getItem,
+  scanTable,
+  updateItem,
+} from '../dynamo/dynamoService.js';
 import {
   TABLE_PROJECTS,
   TABLE_PROJECT_ENVS,

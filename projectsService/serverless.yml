@@ -12,6 +12,7 @@ provider:
   environment:
     TABLE_PROJECTS: projects-table-${sls:stage}
     TABLE_PROJECT_ENVS: project-envs-table-${sls:stage}
+    TABLE_TASKS: tasks-table-${sls:stage}
     COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
     COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
 
@@ -47,6 +48,30 @@ provider:
           - ${env:COGNITO_CLIENT_ID}
 
 functions:
+  createTask:
+    handler: handler.createTask
+    events:
+      - httpApi:
+          path: /tasks
+          method: post
+          authorizer: cognitoAuth
+
+  getTasks:
+    handler: handler.getTasks
+    events:
+      - httpApi:
+          path: /tasks
+          method: get
+          authorizer: cognitoAuth
+
+  executeTask:
+    handler: handler.executeTask
+    events:
+      - httpApi:
+          path: /tasks/{taskId}/execute
+          method: post
+          authorizer: cognitoAuth
+
   createProject:
     handler: handler.createProject
     events:
@@ -81,6 +106,18 @@ functions:
 
 resources:
   Resources:
+    TasksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TABLE_TASKS}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
     ProjectsTable:
       Type: AWS::DynamoDB::Table
       Properties:

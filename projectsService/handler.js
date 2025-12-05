@@ -2,6 +2,7 @@
 import * as projectController from './src/controllers/projectController.js';
 import { verifyToken } from './src/utils/authMiddleware.js';
 import { CustomResponse } from './src/utils/response.js';
+import * as taskController from './src/controllers/taskController.js';
 
 // Common wrapper for routes that require authentication
 const withAuth = (fn) => async (event) => {
@@ -25,11 +26,14 @@ const withAuth = (fn) => async (event) => {
   }
 };
 
-// ✅ Export all Lambda handlers (protected by Cognito)
 export const createProject = withAuth(projectController.createProject);
 export const getProjects = withAuth(projectController.getProjects);
 export const createEnvironment = withAuth(projectController.createEnvironment);
 export const getEnvironments = withAuth(projectController.getEnvironments);
+
+export const createTask = withAuth(taskController.createTask);
+export const getTasks = withAuth(taskController.getTasks);
+export const executeTask = withAuth(taskController.executeTask);
 
 /**
  * endpoints:
