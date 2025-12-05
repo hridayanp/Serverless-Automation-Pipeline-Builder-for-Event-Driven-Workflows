@@ -1,5 +1,5 @@
 // src/controllers/projectController.js
-import * as projectService from '../services/projectService.js';
+import * as projectService from '../services/project/projectService.js';
 import { CustomResponse } from '../utils/response.js';
 
 // ✅ Common CORS headers (for all Lambda responses)

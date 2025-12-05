@@ -1,5 +1,5 @@
 // src/services/dynamoService.js
-import { ddbDocClient } from '../config/dynamoConfig.js';
+import { ddbDocClient } from '../../config/dynamoConfig.js';
 import {
   PutCommand,
   GetCommand,
