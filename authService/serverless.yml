@@ -1,0 +1,78 @@
+org: hridayanp
+service: authService
+
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: ap-south-1
+
+  environment:
+    USERS_TABLE: users-table-${sls:stage}
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+          Resource:
+            - Fn::GetAtt: [UsersTable, Arn]
+        - Effect: Allow
+          Action:
+            - cognito-idp:SignUp
+            - cognito-idp:ConfirmSignUp
+            - cognito-idp:AdminConfirmSignUp
+            - cognito-idp:InitiateAuth
+            - cognito-idp:AdminInitiateAuth
+            - cognito-idp:GlobalSignOut
+          Resource: '*'
+
+functions:
+  signup:
+    handler: handler.signup
+    events:
+      - httpApi:
+          path: /signup
+          method: post
+
+  confirmUser:
+    handler: handler.confirmUser
+    events:
+      - httpApi:
+          path: /confirm
+          method: post
+
+  login:
+    handler: handler.login
+    events:
+      - httpApi:
+          path: /login
+          method: post
+
+  signout:
+    handler: handler.signout
+    events:
+      - httpApi:
+          path: /signout
+          method: post
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
