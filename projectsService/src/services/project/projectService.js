@@ -7,7 +7,7 @@ import {
   getItem,
   scanTable,
   updateItem,
-} from '../dynamo/dynamoService.js';
+} from '../aws/dynamoService.js';
 import {
   TABLE_PROJECTS,
   TABLE_PROJECT_ENVS,

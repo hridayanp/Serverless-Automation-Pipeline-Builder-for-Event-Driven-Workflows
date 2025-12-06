@@ -10,27 +10,56 @@ import {
   getItem,
   scanTable,
   updateItem,
-} from '../dynamo/dynamoService.js';
+} from '../aws/dynamoService.js';
+
+import { putFile, getFile } from '../aws/s3Service.js';
 
 const TABLE = process.env.TABLE_TASKS;
+const BUCKET = process.env.BUCKET_TASK_FILES;
 const BASE_TMP = '/tmp';
 
 /* ============================================================
-   CREATE TASK — store file_data.file_content + requirements.file_content as BASE64
+   CREATE TASK — store Base64 files in S3
    ============================================================ */
 export const createTask = async ({
   name,
   description,
   project_id,
   environment_id,
-  file_data, // { file_name, file_content: BASE64 }
-  requirements, // { file_name, file_content: BASE64 }
+  file_data,
+  requirements,
   script_folder_name,
   log_file_name,
 }) => {
   const taskId = uuidv4();
   const now = new Date().toISOString();
 
+  let file_data_s3_key = null;
+  let requirements_s3_key = null;
+
+  /* ---------------------------
+      Upload script file to S3
+     --------------------------- */
+  if (file_data?.file_content) {
+    const buffer = Buffer.from(file_data.file_content, 'base64');
+    file_data_s3_key = `tasks/${taskId}/${file_data.file_name}`;
+
+    await putFile(BUCKET, file_data_s3_key, buffer, 'text/plain');
+  }
+
+  /* ---------------------------
+      Upload requirements to S3
+     --------------------------- */
+  if (requirements?.file_content) {
+    const buffer = Buffer.from(requirements.file_content, 'base64');
+    requirements_s3_key = `tasks/${taskId}/${requirements.file_name}`;
+
+    await putFile(BUCKET, requirements_s3_key, buffer, 'text/plain');
+  }
+
+  /* ---------------------------
+      Insert into DynamoDB
+     --------------------------- */
   const item = {
     id: taskId,
     name: name || '',
@@ -38,17 +67,16 @@ export const createTask = async ({
     project_id,
     environment_id,
 
-    // Store EXACT payload
-    file_data: file_data || null,
-    requirements: requirements || null,
+    file_data_s3_key,
+    requirements_s3_key,
 
     status: 'IN_PROGRESS',
     task_unique_id: uuidv4(),
 
     log_file_name: log_file_name || 'task.log',
-    log_file_base64: null,
+    log_file_s3_key: null,
 
-    script_folder: script_folder_name || '',
+    script_folder_name: script_folder_name || '',
 
     created_at: now,
     updated_at: now,
@@ -75,7 +103,7 @@ export const getAllTasks = async (projectId = null) => {
 };
 
 /* ============================================================
-   serializeTask — returns EXACT payload shape
+   serializeTask — only returns metadata + S3 keys
    ============================================================ */
 export const serializeTask = (task) => {
   if (!task) return null;
@@ -88,11 +116,11 @@ export const serializeTask = (task) => {
     environment_id: task.environment_id,
     status: task.status,
 
-    file_data: task.file_data || null,
-    requirements: task.requirements || null,
+    file_data_s3_key: task.file_data_s3_key || null,
+    requirements_s3_key: task.requirements_s3_key || null,
 
     log_file_name: task.log_file_name,
-    log_file_base64: task.log_file_base64 || null,
+    log_file_s3_key: task.log_file_s3_key || null,
 
     created_at: task.created_at,
     updated_at: task.updated_at,
@@ -100,7 +128,37 @@ export const serializeTask = (task) => {
 };
 
 /* ============================================================
-   Update status helper
+   GET SCRIPT FILE FROM S3 (Base64 output)
+   ============================================================ */
+export const getTaskScriptFile = async (taskId) => {
+  const task = await getTaskById(taskId);
+  if (!task?.file_data_s3_key) throw new Error('Script not found');
+
+  const data = await getFile(BUCKET, task.file_data_s3_key);
+
+  return {
+    file_name: path.basename(task.file_data_s3_key),
+    file_content_base64: data.base64,
+  };
+};
+
+/* ============================================================
+   GET REQUIREMENTS FILE FROM S3 (Base64)
+   ============================================================ */
+export const getTaskRequirementsFile = async (taskId) => {
+  const task = await getTaskById(taskId);
+  if (!task?.requirements_s3_key) throw new Error('Requirements not found');
+
+  const data = await getFile(BUCKET, task.requirements_s3_key);
+
+  return {
+    file_name: path.basename(task.requirements_s3_key),
+    file_content_base64: data.base64,
+  };
+};
+
+/* ============================================================
+   UPDATE TASK STATUS
    ============================================================ */
 export const updateTaskStatus = async (taskId, status) => {
   return await updateItem(
@@ -116,49 +174,30 @@ export const updateTaskStatus = async (taskId, status) => {
 };
 
 /* ============================================================
-   execTaskRequirements — nothing installs here
-   ============================================================ */
-export const execTaskRequirements = async (taskId) => {
-  const task = await getTaskById(taskId);
-  if (!task) throw new Error('Task not found');
-
-  if (!task.requirements || !task.requirements.file_content) {
-    await updateTaskStatus(taskId, 'REQUIREMENTS_INSTALLATION_FAILED');
-    throw new Error('Missing requirements file');
-  }
-
-  await updateTaskStatus(taskId, 'CREATED');
-  return true;
-};
-
-/* ============================================================
-   EXECUTE TASK — decode base64 → write script → run python
+   EXECUTE TASK — download script from S3 & run locally
    ============================================================ */
 export const executeTask = async (taskId) => {
   const task = await getTaskById(taskId);
   if (!task) throw new Error('Task not found');
 
-  if (!task.file_data || !task.file_data.file_content) {
+  if (!task.file_data_s3_key) {
     await updateTaskStatus(taskId, 'FAILED');
     throw new Error('Missing script file');
   }
 
+  // Create temporary directory
   const scriptDir = path.join(BASE_TMP, 'task-run', taskId);
-  if (!fs.existsSync(scriptDir)) fs.mkdirSync(scriptDir, { recursive: true });
+  fs.mkdirSync(scriptDir, { recursive: true });
 
-  const scriptPath = path.join(
-    scriptDir,
-    task.file_data.file_name || 'script.py'
-  );
+  const scriptPath = path.join(scriptDir, 'script.py');
 
-  // Decode BASE64 → actual python script
-  fs.writeFileSync(
-    scriptPath,
-    Buffer.from(task.file_data.file_content, 'base64').toString('utf8')
-  );
+  // Download script from S3
+  const fileObj = await getFile(BUCKET, task.file_data_s3_key);
+  fs.writeFileSync(scriptPath, fileObj.buffer.toString());
 
   await updateTaskStatus(taskId, 'RUNNING');
 
+  // Execute the script
   const result = spawnSync('python3', [scriptPath], {
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
@@ -166,22 +205,28 @@ export const executeTask = async (taskId) => {
 
   const stdout = result.stdout || '';
   const stderr = result.stderr || '';
-  const fullLog = `=== STDOUT ===\n${stdout}\n\n=== STDERR ===\n${stderr}\nexitCode: ${result.status}`;
+  const exitCode = result.status;
 
-  // Save log as BASE64
+  const fullLog = `=== STDOUT ===\n${stdout}\n\n=== STDERR ===\n${stderr}\nexitCode: ${exitCode}`;
+
+  // Upload logs to S3
+  const logKey = `tasks/${taskId}/${task.log_file_name}`;
+  await putFile(BUCKET, logKey, Buffer.from(fullLog, 'utf8'), 'text/plain');
+
+  // Update task log key
   await updateItem(
     TABLE,
     { id: taskId },
-    'SET log_file_base64 = :l, updated_at = :u',
+    'SET log_file_s3_key = :k, updated_at = :u',
     {
-      ':l': Buffer.from(fullLog).toString('base64'),
+      ':k': logKey,
       ':u': new Date().toISOString(),
     }
   );
 
-  if (result.status !== 0) {
+  if (exitCode !== 0) {
     await updateTaskStatus(taskId, 'FAILED');
-    return { success: false, exitCode: result.status };
+    return { success: false, exitCode };
   }
 
   await updateTaskStatus(taskId, 'COMPLETED');
@@ -189,15 +234,17 @@ export const executeTask = async (taskId) => {
 };
 
 /* ============================================================
-   GET LOGS — return log_file_base64 as is
+   RETRIEVE LOG FILE FROM S3 (Base64)
    ============================================================ */
 export const getTaskLogs = async (taskId) => {
   const task = await getTaskById(taskId);
-  if (!task) throw new Error('Task not found');
+  if (!task?.log_file_s3_key) throw new Error('Logs not found');
+
+  const fileObj = await getFile(BUCKET, task.log_file_s3_key);
 
   return {
     taskId,
     log_file_name: task.log_file_name,
-    log_file_base64: task.log_file_base64 || null,
+    log_file_base64: fileObj.base64,
   };
 };

@@ -14,12 +14,14 @@ provider:
     TABLE_PROJECTS: projects-table-${sls:stage}
     TABLE_PROJECT_ENVS: project-envs-table-${sls:stage}
     TABLE_TASKS: tasks-table-${sls:stage}
+    BUCKET_TASK_FILES: task-files-bucket-${sls:stage} # NEW for S3
     COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
     COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
 
   iam:
     role:
       statements:
+        # DynamoDB permissions
         - Effect: Allow
           Action:
             - dynamodb:PutItem
@@ -27,6 +29,13 @@ provider:
             - dynamodb:Scan
             - dynamodb:UpdateItem
           Resource: '*'
+
+        # S3 permissions for task files
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource: arn:aws:s3:::${self:provider.environment.BUCKET_TASK_FILES}/*
 
   httpApi:
     cors:
@@ -53,7 +62,6 @@ functions:
   # --------------------------------------------------------
   # Tasks
   # --------------------------------------------------------
-
   createTask:
     handler: handler.createTask
     events:
@@ -78,7 +86,6 @@ functions:
           method: post
           authorizer: cognitoAuth
 
-  # NEW — Retrieve Base64-encoded log file from DynamoDB
   getTaskLogFile:
     handler: handler.getTaskLogFile
     events:
@@ -87,7 +94,6 @@ functions:
           method: get
           authorizer: cognitoAuth
 
-  # NEW — Retrieve Base64 file_data + Base64 requirements
   getTaskScriptFiles:
     handler: handler.getTaskScriptFiles
     events:
@@ -99,7 +105,6 @@ functions:
   # --------------------------------------------------------
   # Projects
   # --------------------------------------------------------
-
   createProject:
     handler: handler.createProject
     events:
@@ -119,7 +124,6 @@ functions:
   # --------------------------------------------------------
   # Environments
   # --------------------------------------------------------
-
   createEnvironment:
     handler: handler.createEnvironment
     events:
@@ -176,3 +180,8 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+
+    TaskFilesBucket: # Optional if you want CloudFormation to create the S3 bucket
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.BUCKET_TASK_FILES}
