@@ -9,6 +9,7 @@ provider:
   runtime: nodejs22.x
   region: ap-south-1
   stage: ${opt:stage, 'dev'}
+
   environment:
     TABLE_PROJECTS: projects-table-${sls:stage}
     TABLE_PROJECT_ENVS: project-envs-table-${sls:stage}
@@ -39,6 +40,7 @@ provider:
         - POST
         - OPTIONS
       allowCredentials: false
+
     authorizers:
       cognitoAuth:
         type: jwt
@@ -48,6 +50,10 @@ provider:
           - ${env:COGNITO_CLIENT_ID}
 
 functions:
+  # --------------------------------------------------------
+  # Tasks
+  # --------------------------------------------------------
+
   createTask:
     handler: handler.createTask
     events:
@@ -72,6 +78,28 @@ functions:
           method: post
           authorizer: cognitoAuth
 
+  # NEW — Retrieve Base64-encoded log file from DynamoDB
+  getTaskLogFile:
+    handler: handler.getTaskLogFile
+    events:
+      - httpApi:
+          path: /tasks/{taskId}/logs
+          method: get
+          authorizer: cognitoAuth
+
+  # NEW — Retrieve Base64 file_data + Base64 requirements
+  getTaskScriptFiles:
+    handler: handler.getTaskScriptFiles
+    events:
+      - httpApi:
+          path: /tasks/{taskId}/files
+          method: get
+          authorizer: cognitoAuth
+
+  # --------------------------------------------------------
+  # Projects
+  # --------------------------------------------------------
+
   createProject:
     handler: handler.createProject
     events:
@@ -87,6 +115,10 @@ functions:
           path: /project
           method: get
           authorizer: cognitoAuth
+
+  # --------------------------------------------------------
+  # Environments
+  # --------------------------------------------------------
 
   createEnvironment:
     handler: handler.createEnvironment
@@ -104,6 +136,9 @@ functions:
           method: get
           authorizer: cognitoAuth
 
+# ------------------------------------------------------------
+# DynamoDB Tables
+# ------------------------------------------------------------
 resources:
   Resources:
     TasksTable:

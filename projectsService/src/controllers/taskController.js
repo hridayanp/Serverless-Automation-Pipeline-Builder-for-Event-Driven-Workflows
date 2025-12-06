@@ -2,14 +2,18 @@
 import * as taskService from '../services/task/taskService.js';
 import { CustomResponse } from '../utils/response.js';
 
-// Common CORS headers (same pattern as your controllers)
+// Common CORS headers
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Credentials': true,
 };
 
+// ----------------------------------------------------------------------------
+// 1. CREATE TASK  (Stores Base64 file + Base64 requirements in DynamoDB)
+// ----------------------------------------------------------------------------
 export const createTask = async (event) => {
   const response = new CustomResponse();
+
   try {
     const body = event.body ? JSON.parse(event.body) : {};
 
@@ -18,13 +22,14 @@ export const createTask = async (event) => {
       description,
       project_id,
       environment_id,
-      file_data,
-      requirements,
+
+      file_data, // { file_name, file_content(base64) }
+      requirements, // { file_name, file_content(base64) }
+
       script_folder_name,
       log_file_name,
     } = body;
 
-    // Basic validation
     if (!project_id || !environment_id) {
       response.status = 'FAILURE';
       response.message = 'Missing project_id or environment_id';
@@ -35,8 +40,8 @@ export const createTask = async (event) => {
       };
     }
 
-    // create task record and write files to /tmp
-    const task = await taskService.createTask({
+    // DIRECTLY pass Base64 (no decoding here)
+    const newTask = await taskService.createTask({
       name,
       description,
       project_id,
@@ -49,7 +54,7 @@ export const createTask = async (event) => {
 
     response.status = 'SUCCESS';
     response.message = 'Task created';
-    response.data = task;
+    response.data = newTask;
 
     return {
       statusCode: 201,
@@ -58,8 +63,10 @@ export const createTask = async (event) => {
     };
   } catch (err) {
     console.error('createTask Error:', err);
+
     response.status = 'FAILURE';
-    response.message = err.message || 'Failed to create task';
+    response.message = err.message ?? 'Failed to create task';
+
     return {
       statusCode: 500,
       headers,
@@ -68,6 +75,9 @@ export const createTask = async (event) => {
   }
 };
 
+// ----------------------------------------------------------------------------
+// 2. GET TASK(S)
+// ----------------------------------------------------------------------------
 export const getTasks = async (event) => {
   const response = new CustomResponse();
   try {
@@ -105,7 +115,9 @@ export const getTasks = async (event) => {
   }
 };
 
-// Execute task on demand (POST /tasks/{taskId}/execute)
+// ----------------------------------------------------------------------------
+// 3. EXECUTE TASK
+// ----------------------------------------------------------------------------
 export const executeTask = async (event) => {
   const response = new CustomResponse();
   try {
@@ -120,10 +132,10 @@ export const executeTask = async (event) => {
       };
     }
 
-    // Ensure requirements are available (this will mark CREATED)
-    await taskService.execTaskRequirements(taskId);
+    // 1) Download base64 → /tmp for execution
+    await taskService.prepareFilesForExecution(taskId);
 
-    // Now execute the task script
+    // 2) Execute task
     const result = await taskService.executeTask(taskId);
 
     response.status = 'SUCCESS';
@@ -139,6 +151,91 @@ export const executeTask = async (event) => {
     console.error('executeTask Error:', err);
     response.status = 'FAILURE';
     response.message = err.message || 'Failed to execute task';
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify(response),
+    };
+  }
+};
+
+// ----------------------------------------------------------------------------
+// 4. NEW ENDPOINT — GET TASK LOG FILE (Base64 from DynamoDB)
+// ----------------------------------------------------------------------------
+export const getTaskLogFile = async (event) => {
+  const response = new CustomResponse();
+  try {
+    const { taskId } = event.pathParameters || {};
+
+    if (!taskId) {
+      response.status = 'FAILURE';
+      response.message = 'Missing taskId in path';
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify(response),
+      };
+    }
+
+    const logBase64 = await taskService.getTaskLogFile(taskId);
+
+    response.status = 'SUCCESS';
+    response.message = 'Task log file retrieved';
+    response.data = {
+      task_id: taskId,
+      log_base64: logBase64,
+    };
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(response),
+    };
+  } catch (err) {
+    console.error('getTaskLogFile Error:', err);
+    response.status = 'FAILURE';
+    response.message = err.message || 'Failed to retrieve task log file';
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify(response),
+    };
+  }
+};
+
+// ----------------------------------------------------------------------------
+// 5. NEW ENDPOINT — GET PYTHON SCRIPT FOLDER (Base64 from DynamoDB)
+// ----------------------------------------------------------------------------
+export const getTaskScriptFiles = async (event) => {
+  const response = new CustomResponse();
+  try {
+    const { taskId } = event.pathParameters || {};
+
+    if (!taskId) {
+      response.status = 'FAILURE';
+      response.message = 'Missing taskId';
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify(response),
+      };
+    }
+
+    const files = await taskService.getTaskFiles(taskId);
+
+    response.status = 'SUCCESS';
+    response.message = 'Task script files retrieved';
+    response.data = files; // { file_data_base64, requirements_base64 }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(response),
+    };
+  } catch (err) {
+    console.error('getTaskScriptFiles Error:', err);
+    response.status = 'FAILURE';
+    response.message = err.message || 'Failed to retrieve script files';
     return {
       statusCode: 500,
       headers,
