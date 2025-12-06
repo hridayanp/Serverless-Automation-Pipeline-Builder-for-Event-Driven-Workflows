@@ -1,0 +1,9 @@
+numpy
+pandas
+requests
+boto3
+python-dateutil
+pytz
+beautifulsoup4
+scikit-learn
+joblib
