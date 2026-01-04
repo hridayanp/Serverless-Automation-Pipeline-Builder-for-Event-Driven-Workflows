@@ -10,7 +10,7 @@ const headers = {
 
 /* ============================================================================
    1. CREATE TASK
-   - Stores script + requirements Base64 in S3 via taskService
+   - Stores script + requirements Base64 in S3 via taskService serverless
    ========================================================================= */
 export const createTask = async (event) => {
   const response = new CustomResponse();
