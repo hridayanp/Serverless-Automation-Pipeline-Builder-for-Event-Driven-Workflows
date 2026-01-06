@@ -29,13 +29,26 @@ provider:
             - lambda:InvokeFunction
           Resource: '*'
         # DynamoDB permissions
+        # - Effect: Allow
+        #   Action:
+        #     - dynamodb:PutItem
+        #     - dynamodb:GetItem
+        #     - dynamodb:Scan
+        #     - dynamodb:UpdateItem
+        #   Resource: '*'
+
         - Effect: Allow
           Action:
             - dynamodb:PutItem
             - dynamodb:GetItem
             - dynamodb:Scan
             - dynamodb:UpdateItem
-          Resource: '*'
+          Resource:
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_WORKFLOWS}
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_WORKFLOW_LOGS}
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_WORKFLOW_TASK_LOGS}
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_TASKS}
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_PROJECTS}
 
         # S3 permissions for task files
         - Effect: Allow
@@ -170,7 +183,7 @@ functions:
     handler: handler.executeWorkflow
     events:
       - httpApi:
-          path: /workflows/{workflowId}/execute
+          path: /workflows/{workflow_id}/execute
           method: post
           authorizer: cognitoAuth
 
@@ -254,13 +267,9 @@ resources:
         AttributeDefinitions:
           - AttributeName: run_id
             AttributeType: S
-          - AttributeName: workflow_id
-            AttributeType: S
         KeySchema:
           - AttributeName: run_id
             KeyType: HASH
-          - AttributeName: workflow_id
-            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
 
     WorkflowTaskLogsTable:
