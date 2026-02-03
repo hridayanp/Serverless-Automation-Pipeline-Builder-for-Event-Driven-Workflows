@@ -1,0 +1,7 @@
+.app {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: #d3d3d3 #e4ecf7;
+}
