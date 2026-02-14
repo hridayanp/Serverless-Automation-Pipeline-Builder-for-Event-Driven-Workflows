@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 
 import bgImage from '@/assets/images/common/bg-2.svg';
@@ -14,21 +14,22 @@ import {
 } from '@/components/ui/sidebar';
 
 import { AppSidebar } from './app-sidebar';
+import { Button } from '@/components/ui/button';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-// const AuthToggleButton = () => {
-//   const location = useLocation();
-//   const navigate = useNavigate();
+const AuthToggleButton = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-//   const isLogin = location.pathname === '/signup';
-//   const togglePath = isLogin ? '/' : '/signup';
-//   const buttonLabel = isLogin ? 'Sign In' : 'Sign Up';
+  const isLogin = location.pathname === '/signup';
+  const togglePath = isLogin ? '/' : '/signup';
+  const buttonLabel = isLogin ? 'Sign In' : 'Sign Up';
 
-//   return <Button onClick={() => navigate(togglePath)}>{buttonLabel}</Button>;
-// };
+  return <Button onClick={() => navigate(togglePath)}>{buttonLabel}</Button>;
+};
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
@@ -43,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       '/create-password',
       '/forgot-password/success',
     ],
-    []
+    [],
   );
 
   if (authRoutes.includes(location.pathname)) {
@@ -58,11 +59,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="absolute inset-0 bg-black/10" />
         </div>
         <div className="lg:p-4 h-full grid grid-rows-[auto_1fr]">
-          <div className="px-4 flex items-center justify-between mt-1">
-            <img src={misteoLogo} alt="Logo" className="h-6 object-contain" />
-            {/* <div className="text-center mt-4">
+          <div className="px-4 flex items-center justify-end">
+            <div className="text-center mt-4">
               <AuthToggleButton />
-            </div> */}
+            </div>
           </div>
           <div className="flex items-center justify-center p-4">
             <Card className="max-w-full overflow-hidden p-1">

@@ -9,6 +9,19 @@ provider:
   runtime: nodejs22.x
   region: ap-south-1
 
+  httpApi:
+    cors:
+      allowedOrigins:
+        - http://localhost:3007
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - OPTIONS
+        - GET
+        - POST
+      allowCredentials: true
+
   environment:
     USERS_TABLE: users-table-${sls:stage}
     COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}

@@ -4,57 +4,57 @@ import ApiHelper from './ApiHelper';
 
 export const login = (data: any) => {
   return ApiHelper.post(
-    `${import.meta.env.VITE_REACT_API_URL}/user/login`,
-    data
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/login`,
+    data,
   );
 };
 
 export const signup = (data: any) => {
   return ApiHelper.post(
-    `${import.meta.env.VITE_REACT_API_URL}/user/api/v1/signup`,
-    data
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/signup`,
+    data,
   );
 };
 
 export const verifyOTP = (data: any) => {
   return ApiHelper.post(
-    `${import.meta.env.VITE_REACT_API_URL}/user/api/v1/verify-otp`,
-    data
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/user/api/v1/verify-otp`,
+    data,
   );
 };
 
 export const generateForgotPassword = (data: any) => {
   return ApiHelper.post(
-    `${import.meta.env.VITE_REACT_API_URL}/user/forgotpassword`,
-    data
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/user/forgotpassword`,
+    data,
   );
 };
 
 export const validateForgotPasswordToken = (data: any) => {
   return ApiHelper.post(
-    `${import.meta.env.VITE_REACT_API_URL}/user/forgotpassword/validate`,
-    data
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/user/forgotpassword/validate`,
+    data,
   );
 };
 
 export const resetPassword = (data: any) => {
   return ApiHelper.post(
-    `${import.meta.env.VITE_REACT_API_URL}/user/changepassword`,
-    data
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/user/changepassword`,
+    data,
   );
 };
 
 export const validateOTP = (data: any) => {
   return ApiHelper.post(
-    `${import.meta.env.VITE_REACT_API_URL}/user/email/otp/validate`,
-    data
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/user/email/otp/validate`,
+    data,
   );
 };
 
 export const changePasswordWithRefId = (data: any) => {
   return ApiHelper.post(
-    `${import.meta.env.VITE_REACT_API_URL}/user/changepassword`,
-    data
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/user/changepassword`,
+    data,
   );
 };
 
@@ -67,7 +67,7 @@ export const getUserProfile = () => {
 
   return ApiHelper.getWithHeadersAndData(
     `${import.meta.env.VITE_REACT_API_URL}/user/profile/fetch`,
-    headers
+    headers,
   );
 };
 
@@ -83,7 +83,7 @@ export const getProjects = () => {
 
   return ApiHelper.getWithHeadersAndData(
     `${import.meta.env.VITE_REACT_API_URL}/project/`,
-    headers
+    headers,
   );
 };
 
@@ -97,7 +97,7 @@ export const createProjects = (data: any) => {
   return ApiHelper.postWithHeaders(
     `${import.meta.env.VITE_REACT_API_URL}/project/`,
     headers,
-    data
+    data,
   );
 };
 
@@ -112,7 +112,7 @@ export const getProjectEnvironments = (data: any) => {
     `${import.meta.env.VITE_REACT_API_URL}/project/environment/${
       data.projectId
     }`,
-    headers
+    headers,
   );
 };
 
@@ -128,7 +128,7 @@ export const getTasks = (data: any) => {
 
   return ApiHelper.getWithHeaders(
     `${import.meta.env.VITE_REACT_API_URL}/task/?project_id=${data.project_id}`,
-    headers
+    headers,
   );
 };
 
@@ -142,7 +142,7 @@ export const createTasks = (data: any) => {
   return ApiHelper.postWithHeaders(
     `${import.meta.env.VITE_REACT_API_URL}/task/`,
     headers,
-    data
+    data,
   );
 };
 
@@ -159,7 +159,7 @@ export const createWorkflows = (data: any) => {
   return ApiHelper.postWithHeaders(
     `${import.meta.env.VITE_REACT_API_URL}/workflow/`,
     headers,
-    data
+    data,
   );
 };
 
@@ -174,7 +174,7 @@ export const getWorkflowsForProject = (data: any) => {
     `${import.meta.env.VITE_REACT_API_URL}/workflow/?project_id=${
       data.project_id
     }`,
-    headers
+    headers,
   );
 };
 
@@ -188,6 +188,6 @@ export const getWorkflowJobs = (data: any) => {
   return ApiHelper.postWithHeaders(
     `${import.meta.env.VITE_REACT_API_URL}/workflow/logs`,
     headers,
-    data
+    data,
   );
 };

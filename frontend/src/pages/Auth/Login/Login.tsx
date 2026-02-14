@@ -21,11 +21,19 @@ const Login = () => {
   const handleLogin = async (data: LoginFormValues) => {
     try {
       setIsSubmitting(true);
+
       const res = await login(data);
 
-      if (res?.status === 200 && res.data.success !== false) {
-        localStorage.setItem('access_token', res.data.data.access_token);
-        localStorage.setItem('refresh_token', res.data.data.refresh_token);
+      console.log('res', res);
+
+      if (res?.status === 200 && res?.data?.success) {
+        const authData = res.data.data;
+
+        // Store tokens exactly as returned
+        localStorage.setItem('AccessToken', authData.AccessToken);
+        localStorage.setItem('IdToken', authData.IdToken);
+        localStorage.setItem('RefreshToken', authData.RefreshToken);
+        localStorage.setItem('TokenType', authData.TokenType);
 
         navigate('/dashboard');
       } else {
@@ -50,7 +58,7 @@ const Login = () => {
   }, [isAutologin]);
 
   return (
-    <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+    <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-87.5">
       <div className="flex flex-col space-y-2 text-left">
         <h1 className="text-2xl font-semibold tracking-tight">
           Log in to your account
