@@ -82,7 +82,7 @@ export const getProjects = () => {
   };
 
   return ApiHelper.getWithHeadersAndData(
-    `${import.meta.env.VITE_REACT_API_URL}/project/`,
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/project`,
     headers,
   );
 };
@@ -95,7 +95,7 @@ export const createProjects = (data: any) => {
   };
 
   return ApiHelper.postWithHeaders(
-    `${import.meta.env.VITE_REACT_API_URL}/project/`,
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/project`,
     headers,
     data,
   );
@@ -109,7 +109,7 @@ export const getProjectEnvironments = (data: any) => {
   };
 
   return ApiHelper.getWithHeadersAndData(
-    `${import.meta.env.VITE_REACT_API_URL}/project/environment/${
+    `${import.meta.env.VITE_REACT_AUTH_SERVICE_API_URL}/project/environment/${
       data.projectId
     }`,
     headers,

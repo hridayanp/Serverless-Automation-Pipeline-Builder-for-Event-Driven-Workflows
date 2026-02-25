@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { MultiSelect } from '@/components/ui/multi-select';
+// import { MultiSelect } from '@/components/ui/multi-select';
 import { useForm } from 'react-hook-form';
 
 export type ProjectFormValues = {
@@ -22,7 +22,7 @@ export type ProjectFormValues = {
   script_folder: string;
 };
 
-const languageOptions = ['python'];
+// const languageOptions = ['python'];
 
 type Props = {
   initialValues?: ProjectFormValues;
@@ -41,7 +41,7 @@ export const ProjectForm = ({
     defaultValues: initialValues ?? {
       name: '',
       description: '',
-      languages: [],
+      // languages: [],
       script_folder: '',
     },
   });
@@ -79,14 +79,14 @@ export const ProjectForm = ({
             )}
           />
 
-          <FormItem>
+          {/* <FormItem>
             <FormLabel>Languages</FormLabel>
             <MultiSelect
               options={languageOptions}
               selected={form.watch('languages')}
               onChange={(langs) => form.setValue('languages', langs)}
             />
-          </FormItem>
+          </FormItem> */}
 
           <FormField
             control={form.control}

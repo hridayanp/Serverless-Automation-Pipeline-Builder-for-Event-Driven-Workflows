@@ -30,9 +30,9 @@ const Login = () => {
         const authData = res.data.data;
 
         // Store tokens exactly as returned
-        localStorage.setItem('AccessToken', authData.AccessToken);
+        localStorage.setItem('access_token', authData.AccessToken);
         localStorage.setItem('IdToken', authData.IdToken);
-        localStorage.setItem('RefreshToken', authData.RefreshToken);
+        localStorage.setItem('refresh_token', authData.RefreshToken);
         localStorage.setItem('TokenType', authData.TokenType);
 
         navigate('/dashboard');

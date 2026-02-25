@@ -5,18 +5,19 @@ import {
   GetCommand,
   ScanCommand,
   UpdateCommand,
+  DeleteCommand,
 } from '@aws-sdk/lib-dynamodb';
 
 export const putItem = async (table, item) => {
   const res = await ddbDocClient.send(
-    new PutCommand({ TableName: table, Item: item })
+    new PutCommand({ TableName: table, Item: item }),
   );
   return res;
 };
 
 export const getItem = async (table, key) => {
   const res = await ddbDocClient.send(
-    new GetCommand({ TableName: table, Key: key })
+    new GetCommand({ TableName: table, Key: key }),
   );
   return res.Item;
 };
@@ -31,7 +32,7 @@ export const updateItem = async (
   key,
   updateExpression,
   expressionValues,
-  expressionNames
+  expressionNames,
 ) => {
   const res = await ddbDocClient.send(
     new UpdateCommand({
@@ -41,7 +42,17 @@ export const updateItem = async (
       ExpressionAttributeValues: expressionValues,
       ExpressionAttributeNames: expressionNames,
       ReturnValues: 'ALL_NEW',
-    })
+    }),
   );
   return res.Attributes;
+};
+
+export const deleteItem = async (table, key) => {
+  const res = await ddbDocClient.send(
+    new DeleteCommand({
+      TableName: table,
+      Key: key,
+    }),
+  );
+  return res;
 };

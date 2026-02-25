@@ -7,6 +7,7 @@ import {
   getItem,
   scanTable,
   updateItem,
+  deleteItem,
 } from '../aws/dynamoService.js';
 import {
   TABLE_PROJECTS,
@@ -94,7 +95,7 @@ export const updateEnvStatus = async (envId, status) => {
     { id: envId },
     updateExpression,
     expressionValues,
-    expressionNames
+    expressionNames,
   );
 
   return updated;
@@ -104,4 +105,40 @@ export const updateEnvStatus = async (envId, status) => {
 export const getProjectEnvironments = async (projectId) => {
   const envs = await scanTable(TABLE_PROJECT_ENVS);
   return envs.filter((e) => e.project_id === projectId);
+};
+
+// Delete project (and its environments if any)
+export const deleteProject = async (projectId) => {
+  // 1️⃣ Check if project exists
+  const project = await getItem(TABLE_PROJECTS, { id: projectId });
+
+  if (!project) {
+    throw new Error('Project not found');
+  }
+
+  // 2️⃣ Delete all environments linked to this project (background)
+  const allEnvs = await scanTable(TABLE_PROJECT_ENVS);
+  const relatedEnvs = allEnvs.filter((env) => env.project_id === projectId);
+
+  if (relatedEnvs.length > 0) {
+    await Promise.all(
+      relatedEnvs.map((env) => deleteItem(TABLE_PROJECT_ENVS, { id: env.id })),
+    );
+  }
+
+  // 3️⃣ Delete project record
+  await deleteItem(TABLE_PROJECTS, { id: projectId });
+
+  // 4️⃣ Remove folder from /tmp (if exists)
+  const basePath = '/tmp';
+  const projectPath = path.join(basePath, projectId);
+
+  if (fs.existsSync(projectPath)) {
+    fs.rmSync(projectPath, { recursive: true, force: true });
+  }
+
+  return {
+    status: 'SUCCESS',
+    message: 'Project and associated environments deleted successfully',
+  };
 };

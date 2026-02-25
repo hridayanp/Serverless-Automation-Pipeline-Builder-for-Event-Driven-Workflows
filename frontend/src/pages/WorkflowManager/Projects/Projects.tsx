@@ -35,7 +35,10 @@ export default function ProjectsPage() {
     try {
       setIsSubmitting(true);
       const res = await getProjects();
-      const fetched = res?.data;
+      console.log('res', res);
+
+      // ✅ FIX HERE
+      const fetched = res?.data?.data;
 
       if (Array.isArray(fetched) && fetched.length > 0) {
         dispatch(setProjects(fetched));
@@ -61,6 +64,7 @@ export default function ProjectsPage() {
     setIsSubmitting(true);
     try {
       const res = await createProjects(values);
+      console.log('res', res);
 
       if (
         res &&
@@ -83,7 +87,7 @@ export default function ProjectsPage() {
 
   const handleDelete = () => {
     toast.error(
-      'Please contact administrator to delete a project and its related environments'
+      'Please contact administrator to delete a project and its related environments',
     );
   };
 
@@ -100,7 +104,7 @@ export default function ProjectsPage() {
 
           if (typeof value === 'object') {
             return (
-              <pre className="text-xs text-muted-foreground whitespace-pre-wrap max-w-[300px] overflow-x-auto">
+              <pre className="text-xs text-muted-foreground whitespace-pre-wrap max-w-75 overflow-x-auto">
                 {JSON.stringify(value, null, 2)}
               </pre>
             );
