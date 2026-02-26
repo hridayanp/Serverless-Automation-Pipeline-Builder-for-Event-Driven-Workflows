@@ -46,12 +46,12 @@ export default function Tasks() {
     try {
       setLoading(true);
       const res = await getProjects();
-      const fetched = res?.data;
+      const fetched = res?.data?.data;
 
-      if (Array.isArray(fetched) && fetched.length > 0) {
+      if (res?.data?.success && Array.isArray(fetched) && fetched.length > 0) {
         dispatch(setProjects(fetched));
       } else {
-        toast.error('No projects found');
+        toast.error(res?.data?.message || 'No projects found');
         dispatch(setProjects([]));
       }
     } catch (err) {
@@ -72,11 +72,13 @@ export default function Tasks() {
     try {
       setLoading(true);
       const res = await getTasks({ project_id: projectId });
-      if (res?.status === 200 && Array.isArray(res.data)) {
-        setTasksData(res.data);
+      const fetchedTasks = res?.data?.data;
+
+      if (res?.data?.success && Array.isArray(fetchedTasks)) {
+        setTasksData(fetchedTasks);
       } else {
         setTasksData([]);
-        toast.error('No tasks found');
+        toast.error(res?.data?.message || 'No tasks found');
       }
     } catch (e) {
       console.error('Failed to fetch tasks:', e);
@@ -113,8 +115,22 @@ export default function Tasks() {
     () => [
       { accessorKey: 'name', header: 'Name' },
       { accessorKey: 'description', header: 'Description' },
-      { accessorKey: 'file_data.file_name', header: 'Script File' },
-      { accessorKey: 'requirements.file_name', header: 'Requirements File' },
+      {
+        accessorKey: 'file_data_s3_key',
+        header: 'Script File',
+        cell: ({ row }) => {
+          const key = row.original.file_data_s3_key;
+          return key ? key.split('/').pop() : '-';
+        },
+      },
+      {
+        accessorKey: 'requirements_s3_key',
+        header: 'Requirements File',
+        cell: ({ row }) => {
+          const key = row.original.requirements_s3_key;
+          return key ? key.split('/').pop() : '-';
+        },
+      },
       { accessorKey: 'status', header: 'Status' },
       {
         id: 'actions',
@@ -138,7 +154,7 @@ export default function Tasks() {
         },
       },
     ],
-    []
+    [],
   );
 
   return (

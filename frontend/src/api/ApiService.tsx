@@ -127,7 +127,7 @@ export const getTasks = (data: any) => {
   };
 
   return ApiHelper.getWithHeaders(
-    `${import.meta.env.VITE_REACT_API_URL}/task/?project_id=${data.project_id}`,
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/tasks?project_id=${data.project_id}`,
     headers,
   );
 };
@@ -140,7 +140,7 @@ export const createTasks = (data: any) => {
   };
 
   return ApiHelper.postWithHeaders(
-    `${import.meta.env.VITE_REACT_API_URL}/task/`,
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/tasks`,
     headers,
     data,
   );
