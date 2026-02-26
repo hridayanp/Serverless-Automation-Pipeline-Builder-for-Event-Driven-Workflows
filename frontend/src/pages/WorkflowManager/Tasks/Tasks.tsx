@@ -21,6 +21,13 @@ import toast from 'react-hot-toast';
 import { getProjects, getTasks } from '@/api/ApiService';
 import { Label } from '@/components/ui/label';
 import { setProjects } from '@/redux/slices/workflowSlice';
+import { Eye } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function Tasks() {
   const navigate = useNavigate();
@@ -33,6 +40,14 @@ export default function Tasks() {
   const [selectedProjectId, setSelectedProjectId] = useState<
     string | undefined
   >(projects?.[0]?.id ? String(projects[0].id) : undefined);
+
+  const [viewTask, setViewTask] = useState<any | null>(null);
+
+  const formatLabel = (key: string) => {
+    return key
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
 
   // Update selectedProjectId if Redux projects load later
   useEffect(() => {
@@ -138,7 +153,12 @@ export default function Tasks() {
         cell: ({ row }) => {
           const task = row.original;
           return (
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-3 items-center">
+              <Eye
+                size={18}
+                className="cursor-pointer text-gray-600 hover:text-black"
+                onClick={() => setViewTask(task)}
+              />
               <Pencil
                 size={18}
                 className="cursor-pointer text-blue-600 hover:text-blue-800"
@@ -208,6 +228,29 @@ export default function Tasks() {
           data={tasksData}
         />
       )}
+
+      <Dialog open={!!viewTask} onOpenChange={() => setViewTask(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Task Details</DialogTitle>
+          </DialogHeader>
+
+          {viewTask && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              {Object.entries(viewTask).map(([key, value]) => (
+                <div key={key} className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-gray-600">
+                    {formatLabel(key)}
+                  </span>
+                  <span className="text-sm text-gray-900 wrap-break-word">
+                    {value !== null && value !== '' ? String(value) : '-'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
