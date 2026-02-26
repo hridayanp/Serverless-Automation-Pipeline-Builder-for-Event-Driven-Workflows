@@ -5,7 +5,7 @@ import {
   scanTable,
   updateItem,
 } from '../aws/dynamoService.js';
-import { runPythonScript } from '../utils/scriptRunner.js';
+import { runPythonScript } from '../../utils/scriptRunner.js';
 
 const WORKFLOW_TABLE = process.env.TABLE_WORKFLOWS;
 const WORKFLOW_LOGS = process.env.TABLE_WORKFLOW_LOGS;
@@ -73,7 +73,7 @@ export const executeWorkflow = async (workflowId) => {
         ':s': 'COMPLETED',
         ':e': new Date().toISOString(),
       },
-      { '#status': 'status' }
+      { '#status': 'status' },
     );
   } catch (err) {
     await updateItem(
@@ -84,7 +84,7 @@ export const executeWorkflow = async (workflowId) => {
         ':s': 'FAILED',
         ':e': new Date().toISOString(),
       },
-      { '#status': 'status' }
+      { '#status': 'status' },
     );
     throw err;
   }
@@ -118,7 +118,7 @@ const runWorkflowNode = async (taskNode, environmentId, runId) => {
       ':s': outcome,
       ':e': new Date().toISOString(),
     },
-    { '#status': 'status' }
+    { '#status': 'status' },
   );
 
   const children = taskNode.children || {};

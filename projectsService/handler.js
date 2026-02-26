@@ -35,6 +35,7 @@ export const createProject = withAuth(projectController.createProject);
 export const getProjects = withAuth(projectController.getProjects);
 export const createEnvironment = withAuth(projectController.createEnvironment);
 export const getEnvironments = withAuth(projectController.getEnvironments);
+export const deleteProject = withAuth(projectController.deleteProject);
 
 // ------------------------------------------------------------------
 // Task routes
