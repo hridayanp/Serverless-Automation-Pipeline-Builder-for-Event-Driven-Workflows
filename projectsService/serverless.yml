@@ -43,12 +43,14 @@ provider:
             - dynamodb:GetItem
             - dynamodb:Scan
             - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
           Resource:
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_WORKFLOWS}
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_WORKFLOW_LOGS}
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_WORKFLOW_TASK_LOGS}
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_TASKS}
             - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_PROJECTS}
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_PROJECT_ENVS}
 
         # S3 permissions for task files
         - Effect: Allow
@@ -67,6 +69,7 @@ provider:
       allowedMethods:
         - GET
         - POST
+        - DELETE
         - OPTIONS
       allowCredentials: false
 
@@ -139,6 +142,13 @@ functions:
       - httpApi:
           path: /project
           method: get
+          authorizer: cognitoAuth
+  deleteProject:
+    handler: handler.deleteProject
+    events:
+      - httpApi:
+          path: /project/{projectId}
+          method: delete
           authorizer: cognitoAuth
 
   # --------------------------------------------------------

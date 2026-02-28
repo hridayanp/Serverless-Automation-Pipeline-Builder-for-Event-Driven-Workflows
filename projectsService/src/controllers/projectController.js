@@ -149,3 +149,46 @@ export const getEnvironments = async (event) => {
     };
   }
 };
+
+// -------------------- DELETE PROJECT --------------------
+export const deleteProject = async (event) => {
+  const response = new CustomResponse();
+
+  try {
+    const { projectId } = event.pathParameters || {};
+
+    if (!projectId) {
+      response.status = 'FAILURE';
+      response.message = 'Missing projectId in path parameters';
+
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify(response),
+      };
+    }
+
+    const result = await projectService.deleteProject(projectId);
+
+    response.status = 'SUCCESS';
+    response.message = result.message;
+    response.data = null;
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(response),
+    };
+  } catch (err) {
+    console.error('deleteProject Error:', err);
+
+    response.status = 'FAILURE';
+    response.message = err.message || 'Failed to delete project';
+
+    return {
+      statusCode: err.message === 'Project not found' ? 404 : 500,
+      headers,
+      body: JSON.stringify(response),
+    };
+  }
+};
