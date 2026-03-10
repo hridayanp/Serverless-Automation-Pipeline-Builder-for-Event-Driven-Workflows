@@ -95,7 +95,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   React.useEffect(() => {
     const match = data.navMain.find((item) =>
-      item.items?.some((sub: any) => sub.url === location.pathname)
+      item.items?.some((sub: any) => sub.url === location.pathname),
     );
     if (match) setOpenMenu(match.title);
   }, [location.pathname]);
@@ -106,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar {...props}>
+    <Sidebar {...props} collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -176,7 +176,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              )
+              ),
             )}
           </SidebarMenu>
         </SidebarGroup>

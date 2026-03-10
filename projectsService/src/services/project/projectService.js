@@ -55,19 +55,30 @@ export const createProjectEnvironment = async ({
   file_name,
   file_content,
 }) => {
+  if (!project_id || !file_name) {
+    throw new Error('project_id and file_name are required');
+  }
+
   const envId = uuidv4();
+
+  const project = await getItem(TABLE_PROJECTS, { id: project_id });
+
+  if (!project) {
+    throw new Error('Project not found');
+  }
+
   const basePath = '/tmp';
-  const projectPath = path.join(basePath, project_id);
+  const projectPath = path.join(basePath, project.script_folder);
 
   if (!fs.existsSync(projectPath)) {
     fs.mkdirSync(projectPath, { recursive: true });
   }
 
-  const envFilePath = path.join(projectPath, file_name || '');
+  const envFilePath = path.join(projectPath, file_name);
 
   if (file_content) {
-    const decoded = Buffer.from(file_content, 'base64').toString('utf-8');
-    fs.writeFileSync(envFilePath, decoded, { encoding: 'utf-8' });
+    const decoded = Buffer.from(file_content, 'base64').toString('utf8');
+    fs.writeFileSync(envFilePath, decoded);
   }
 
   const envItem = {
@@ -81,6 +92,7 @@ export const createProjectEnvironment = async ({
   };
 
   await putItem(TABLE_PROJECT_ENVS, envItem);
+
   return envItem;
 };
 

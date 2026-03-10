@@ -46,7 +46,7 @@ export default function TaskForm({
     });
 
   const [scriptInputType, setScriptInputType] = useState<'editor' | 'upload'>(
-    initialData?.file_data?.file_name ? 'upload' : 'editor'
+    initialData?.file_data?.file_name ? 'upload' : 'editor',
   );
   const [requirementsInputType, setRequirementsInputType] = useState<
     'editor' | 'upload'
@@ -70,12 +70,16 @@ export default function TaskForm({
   const fetchEnvironments = async (projectId: string | number) => {
     try {
       setLoadingEnv(true);
+
       const res = await getProjectEnvironments({ projectId });
-      if (res?.data?.status === 'success' && Array.isArray(res.data.data)) {
-        setEnvOptions(res.data.data);
-        setShowEnvSelect(true);
+
+      const apiData = res?.data;
+
+      if (apiData?.success && Array.isArray(apiData?.data)) {
+        setEnvOptions(apiData.data);
+        setShowEnvSelect(apiData.data.length > 0);
       } else {
-        toast.error('No environments found');
+        toast.error(apiData?.message || 'No environments found');
         setEnvOptions([]);
         setShowEnvSelect(false);
       }
@@ -91,7 +95,7 @@ export default function TaskForm({
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    field: 'file_data' | 'requirements'
+    field: 'file_data' | 'requirements',
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -155,7 +159,7 @@ export default function TaskForm({
                   field.onChange(value);
 
                   const selected = projects.find(
-                    (p) => String(p.id) === String(value)
+                    (p) => String(p.id) === String(value),
                   );
                   if (selected?.script_folder) {
                     setValue('script_folder_name', selected.script_folder);

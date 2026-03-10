@@ -27,7 +27,7 @@ const AddTasks = () => {
       const res = await createTasks(data);
       console.log('res', res);
 
-      if (res?.status === 201 && res.data.status === 'success') {
+      if (res?.status === 201 && res.data.status === true) {
         toast.success('Task created successfully');
         navigate('/workflow/tasks');
       } else {

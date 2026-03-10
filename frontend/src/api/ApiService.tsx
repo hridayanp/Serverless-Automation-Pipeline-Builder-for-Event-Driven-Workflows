@@ -114,6 +114,20 @@ export const deleteProjects = (data: any) => {
   );
 };
 
+export const createProjectEnvironments = (data: any) => {
+  const accessToken = localStorage.getItem('access_token');
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    Accept: 'application/json',
+  };
+
+  return ApiHelper.postWithHeaders(
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}project/environment`,
+    headers,
+    data,
+  );
+};
+
 export const getProjectEnvironments = (data: any) => {
   const accessToken = localStorage.getItem('access_token');
   const headers = {

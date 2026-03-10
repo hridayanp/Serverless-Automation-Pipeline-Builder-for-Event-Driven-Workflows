@@ -20,7 +20,12 @@ import { Plus, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/Table/Table';
 import { SectionHeading } from '@/components/Headings/SectionHeading';
-import { createProjects, getProjects } from '@/api/ApiService';
+import {
+  createProjectEnvironments,
+  createProjects,
+  deleteProjects,
+  getProjects,
+} from '@/api/ApiService';
 import toast from 'react-hot-toast';
 
 export default function ProjectsPage() {
@@ -60,19 +65,48 @@ export default function ProjectsPage() {
     fetchProjectsRef.current();
   }, []);
 
+  const createProjectsEnv = async (projectId: any) => {
+    const payload = {
+      project_id: projectId,
+      env_name: 'dev',
+      language: 'python',
+      method: 'test',
+      file_name: 'requirements.txt',
+      file_content:
+        'bnVtcHkKcGFuZGFzCnJlcXVlc3RzCmJvdG8zCnB5dGhvbi1kYXRldXRpbApweXR6CmJlYXV0aWZ1bHNvdXA0CnNjaWtpdC1sZWFybgpqb2JsaWI=',
+    };
+    try {
+      const res = await createProjectEnvironments(payload);
+      console.log('res', res);
+    } catch (e) {
+      console.log('e', e);
+    }
+  };
+
   const handleSubmit = async (values: ProjectFormValues) => {
     setIsSubmitting(true);
+
     try {
       const res = await createProjects(values);
-      console.log('res', res);
+      console.log('project res', res);
 
       if (
         res &&
-        res.data?.status === 'success' &&
-        res?.data?.message === 'Project created successfully.'
+        res.data?.success === true &&
+        res?.data?.message === 'Project created successfully'
       ) {
+        const projectId = res?.data?.data?.id;
+
         toast.success(res.data.message);
-        await fetchProjectsRef.current(); // Refresh project list
+
+        // ✅ Create environment after project creation
+        if (projectId) {
+          await createProjectsEnv(projectId);
+          toast.success('Environment created successfully');
+        }
+
+        // refresh project list
+        await fetchProjectsRef.current();
       } else {
         toast.error('Project creation failed');
       }
@@ -80,15 +114,37 @@ export default function ProjectsPage() {
       console.error(error);
       toast.error('Project creation failed');
     } finally {
+      // loading remains until env creation completes
       setIsSubmitting(false);
       setDialogOpen(false);
     }
   };
 
-  const handleDelete = () => {
-    toast.error(
-      'Please contact administrator to delete a project and its related environments',
-    );
+  const handleDelete = async (row: any) => {
+    console.log('row', row);
+
+    const payload = {
+      project_id: row.id,
+    };
+
+    try {
+      const res = await deleteProjects(payload);
+      console.log('res', res);
+      if (res?.status === 200 && res.data.success === true) {
+        toast.success(
+          res.data.message ||
+            'Project and associated environments deleted successfully',
+        );
+        fetchProjectsRef.current();
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
+    } catch (e) {
+      console.log('e', e);
+      toast.error(
+        'Please contact administrator to delete a project and its related environments',
+      );
+    }
   };
 
   const columns: ColumnDef<any>[] = useMemo(() => {
@@ -117,12 +173,12 @@ export default function ProjectsPage() {
     const actionColumn: ColumnDef<any> = {
       id: 'actions',
       header: 'Actions',
-      cell: () => (
+      cell: ({ row }) => (
         <div className="flex justify-center items-center mr-[20%]">
           <Trash2
             size={20}
             className="text-red-600 cursor-pointer hover:text-red-800"
-            onClick={() => handleDelete()}
+            onClick={() => handleDelete(row.original)}
           />
         </div>
       ),
