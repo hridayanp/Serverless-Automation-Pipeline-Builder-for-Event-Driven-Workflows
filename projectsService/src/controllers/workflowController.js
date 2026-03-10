@@ -43,19 +43,61 @@ export const createWorkflow = async (event) => {
    GET WORKFLOWS
    GET /workflows?project_id=&workflow_id=
 ---------------------------------- */
+// export const getWorkflows = async (event) => {
+//   const response = new CustomResponse();
+//   const { project_id, workflow_id } = event.queryStringParameters || {};
+
+//   try {
+//     let data;
+
+//     if (workflow_id) {
+//       data = await workflowService.getWorkflowById(workflow_id);
+//     } else if (project_id) {
+//       data = await workflowService.getWorkflows(project_id);
+//     } else {
+//       throw new Error('Either project_id or workflow_id must be provided');
+//     }
+
+//     response.status = 'SUCCESS';
+//     response.data = data;
+
+//     return {
+//       statusCode: 200,
+//       headers,
+//       body: JSON.stringify(response),
+//     };
+//   } catch (err) {
+//     response.status = 'FAILURE';
+//     response.message = err.message || 'Workflow fetch failed';
+
+//     return {
+//       statusCode: err.message?.includes('must be provided') ? 400 : 500,
+//       headers,
+//       body: JSON.stringify(response),
+//     };
+//   }
+// };
+
 export const getWorkflows = async (event) => {
   const response = new CustomResponse();
   const { project_id, workflow_id } = event.queryStringParameters || {};
 
   try {
+    // Ensure exactly one parameter is provided
+    if (!project_id && !workflow_id) {
+      throw new Error('Either project_id or workflow_id must be provided');
+    }
+
+    if (project_id && workflow_id) {
+      throw new Error('Provide only one of project_id or workflow_id');
+    }
+
     let data;
 
     if (workflow_id) {
       data = await workflowService.getWorkflowById(workflow_id);
-    } else if (project_id) {
-      data = await workflowService.getWorkflows(project_id);
     } else {
-      throw new Error('Either project_id or workflow_id must be provided');
+      data = await workflowService.getWorkflows(project_id);
     }
 
     response.status = 'SUCCESS';
@@ -71,7 +113,7 @@ export const getWorkflows = async (event) => {
     response.message = err.message || 'Workflow fetch failed';
 
     return {
-      statusCode: err.message?.includes('must be provided') ? 400 : 500,
+      statusCode: err.message?.includes('provided') ? 400 : 500,
       headers,
       body: JSON.stringify(response),
     };

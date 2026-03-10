@@ -57,11 +57,16 @@ export default function SchedulerForm({
 
       try {
         const res = await getTasks({ project_id: projectId });
+        console.log('res', res);
 
-        if (res?.status === 200 && Array.isArray(res.data)) {
-          dispatch(setTasks(res.data));
+        const apiData = res?.data;
+
+        if (apiData?.success && Array.isArray(apiData?.data)) {
+          dispatch(setTasks(apiData.data));
         } else {
-          toast.error('No tasks found for the selected project');
+          toast.error(
+            apiData?.message || 'No tasks found for the selected project',
+          );
         }
       } catch (error) {
         console.error('Failed to fetch tasks:', error);
@@ -75,16 +80,20 @@ export default function SchedulerForm({
   useEffect(() => {
     const fetchEnvironments = async () => {
       if (!projectId) return;
+
       setLoadingEnv(true);
       setShowEnvSelect(false);
 
       try {
         const res = await getProjectEnvironments({ projectId });
-        if (res?.data?.status === 'success' && Array.isArray(res.data.data)) {
-          setEnvOptions(res.data.data);
-          setShowEnvSelect(true);
+
+        const apiData = res?.data;
+
+        if (apiData?.success && Array.isArray(apiData?.data)) {
+          setEnvOptions(apiData.data);
+          setShowEnvSelect(apiData.data.length > 0);
         } else {
-          toast.error('No environments found');
+          toast.error(apiData?.message || 'No environments found');
           setEnvOptions([]);
         }
       } catch (error) {
@@ -145,7 +154,7 @@ export default function SchedulerForm({
 
           {/* Environment Dropdown or Loader */}
           {loadingEnv ? (
-            <div className="flex items-center justify-start gap-2 pt-[22px]">
+            <div className="flex items-center justify-start gap-2 pt-5.5">
               <div className="w-5 h-5 border-2 border-t-transparent border-gray-500 rounded-full animate-spin" />
               <span className="text-sm text-gray-600">
                 Fetching environments...

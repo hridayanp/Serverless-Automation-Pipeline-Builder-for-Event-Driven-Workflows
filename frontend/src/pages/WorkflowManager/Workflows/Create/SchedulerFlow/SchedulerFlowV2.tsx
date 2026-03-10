@@ -98,14 +98,14 @@ export default function SchedulerFlow() {
         .filter((e) => e.source === nodeId)
         .forEach((edge) => {
           const triggerNode = nodes.find(
-            (n) => n.id === edge.target && n.type === 'trigger'
+            (n) => n.id === edge.target && n.type === 'trigger',
           );
           if (!triggerNode || triggerNode.data.selectedTrigger === undefined)
             return;
 
           const label = (
             triggerNode.data.triggerOptions.find(
-              (o: any) => o.value === triggerNode.data.selectedTrigger
+              (o: any) => o.value === triggerNode.data.selectedTrigger,
             )?.label ?? 'unknown'
           )
             .toLowerCase()
@@ -118,13 +118,13 @@ export default function SchedulerFlow() {
             throw new Error(
               `Trigger "${label}" for task "${
                 node.data.label || node.id
-              }" has too many children. Only one is allowed.`
+              }" has too many children. Only one is allowed.`,
             );
           }
 
           childEdges.forEach((e2) => {
             const child = nodes.find(
-              (n) => n.id === e2.target && n.type === 'task'
+              (n) => n.id === e2.target && n.type === 'task',
             );
             if (!child) return;
 
@@ -133,7 +133,7 @@ export default function SchedulerFlow() {
               throw new Error(
                 `Task "${
                   node.data.label || node.id
-                }" has too many children. Only one child is allowed.`
+                }" has too many children. Only one child is allowed.`,
               );
             }
 
@@ -197,9 +197,10 @@ export default function SchedulerFlow() {
 
     try {
       const res = await createWorkflows(payload);
+      // console.log('res', res);
 
-      if (res?.status === 201 && res.data.status === 'success') {
-        toast.success('Workflow created successfully!');
+      if (res?.status === 201 && res.data.status === true) {
+        toast.success(res.data.message || 'Workflow created successfully!');
         navigate('/workflow/details');
       } else {
         toast.error('Something went wrong. Please try again.');
@@ -269,8 +270,8 @@ export default function SchedulerFlow() {
                       },
                       animated: true,
                     },
-                    eds
-                  )
+                    eds,
+                  ),
                 )
               }
               nodeTypes={nodeTypes}

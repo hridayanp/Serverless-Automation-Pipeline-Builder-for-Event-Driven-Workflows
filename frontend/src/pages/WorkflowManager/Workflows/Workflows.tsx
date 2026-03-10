@@ -55,10 +55,15 @@ export default function Workflow() {
   const fetchProjectsRef = useRef(async () => {
     try {
       const res = await getProjects();
-      if (Array.isArray(res?.data) && res.data.length > 0) {
-        dispatch(setProjectState(res.data));
-        const firstProjectId = String(res.data[0].id);
+
+      const projectData = res?.data?.data || res?.data;
+
+      if (Array.isArray(projectData) && projectData.length > 0) {
+        dispatch(setProjectState(projectData));
+
+        const firstProjectId = String(projectData[0].id);
         setSelectedProjectId(firstProjectId);
+
         fetchWorkflows(firstProjectId);
       }
     } catch (e) {
@@ -108,7 +113,7 @@ export default function Workflow() {
     task: any,
     depth = 0,
     limit = 3,
-    counter = { count: 0 }
+    counter = { count: 0 },
   ) => {
     if (counter.count >= limit) return null;
     counter.count++;
@@ -133,13 +138,13 @@ export default function Workflow() {
                           child,
                           depth + 1,
                           limit,
-                          counter
+                          counter,
                         )}
                       </div>
                     ))}
                   </div>
                 </div>
-              )
+              ),
             )}
         </li>
       </ul>

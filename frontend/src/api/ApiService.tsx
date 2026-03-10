@@ -184,7 +184,7 @@ export const createWorkflows = (data: any) => {
   };
 
   return ApiHelper.postWithHeaders(
-    `${import.meta.env.VITE_REACT_API_URL}/workflow/`,
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/workflows`,
     headers,
     data,
   );
@@ -198,7 +198,7 @@ export const getWorkflowsForProject = (data: any) => {
   };
 
   return ApiHelper.getWithHeaders(
-    `${import.meta.env.VITE_REACT_API_URL}/workflow/?project_id=${
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/workflows?project_id=${
       data.project_id
     }`,
     headers,
