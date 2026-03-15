@@ -197,9 +197,9 @@ export default function SchedulerFlow() {
 
     try {
       const res = await createWorkflows(payload);
-      // console.log('res', res);
+      console.log('res', res);
 
-      if (res?.status === 201 && res.data.status === true) {
+      if (res?.status === 201 && res.data.success === true) {
         toast.success(res.data.message || 'Workflow created successfully!');
         navigate('/workflow/details');
       } else {
