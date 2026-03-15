@@ -171,8 +171,8 @@ export default function SchedulerFlow() {
     }
 
     const payload = {
-      project_id: Number(projectId),
-      environment_id: Number(envId),
+      project_id: projectId,
+      environment_id: envId,
       workflow_name: workflowName,
       scheduler_detail: { cron, detail: cronDetail },
       tasks,

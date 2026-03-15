@@ -15,15 +15,24 @@ const TASK_LOGS = process.env.TABLE_WORKFLOW_TASK_LOGS;
    CREATE WORKFLOW
 -------------------------------------------------- */
 export const createWorkflow = async (workflow) => {
+  if (!workflow.tasks || !workflow.scheduler_detail) {
+    throw new Error('Invalid workflow payload');
+  }
+
   const id = uuidv4();
+
+  const tasks = ensureNodeIds(JSON.parse(JSON.stringify(workflow.tasks)));
 
   const item = {
     id,
     workflow_name: workflow.workflow_name,
-    scheduler_detail: workflow.scheduler_detail,
-    tasks: ensureNodeIds(workflow.tasks),
     project_id: workflow.project_id,
     environment_id: workflow.environment_id,
+    scheduler_detail: {
+      cron: workflow.scheduler_detail?.cron || null,
+      detail: workflow.scheduler_detail?.detail || null,
+    },
+    tasks,
     created_at: new Date().toISOString(),
   };
 
@@ -41,8 +50,16 @@ export const getWorkflowById = async (id) => {
 
 export const getWorkflows = async (projectId) => {
   const workflows = await scanTable(WORKFLOW_TABLE);
+
+  if (!projectId) {
+    return workflows.map(serializeWorkflow);
+  }
+
+  console.log('projectId received:', projectId);
+  console.log('workflows from DB:', workflows);
+
   return workflows
-    .filter((w) => w.project_id === projectId)
+    .filter((w) => String(w.project_id) === String(projectId))
     .map(serializeWorkflow);
 };
 
@@ -173,17 +190,24 @@ export const fetchLogs = async ({ workflow_id }) => {
    HELPERS
 -------------------------------------------------- */
 const ensureNodeIds = (task) => {
-  if (!task.node_id) task.node_id = uuidv4();
+  if (!task) return task;
 
-  const children = task.children || {};
-  for (const key of Object.keys(children)) {
-    const child = children[key];
+  if (!task.node_id) {
+    task.node_id = uuidv4();
+  }
+
+  if (!task.children) return task;
+
+  for (const key of Object.keys(task.children)) {
+    const child = task.children[key];
+
     if (Array.isArray(child)) {
-      child.forEach(ensureNodeIds);
+      task.children[key] = child.map((c) => ensureNodeIds(c));
     } else if (typeof child === 'object') {
-      ensureNodeIds(child);
+      task.children[key] = ensureNodeIds(child);
     }
   }
+
   return task;
 };
 

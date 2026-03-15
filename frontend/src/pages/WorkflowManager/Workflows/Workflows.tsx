@@ -160,7 +160,7 @@ export default function Workflow() {
     const baseColumns =
       workflows.length > 0
         ? Object.keys(workflows[0])
-            .filter((key) => key !== 'tasks')
+            .filter((key) => key !== 'tasks' && key !== 'id')
             .map((key) => ({
               accessorKey: key,
               header: key
@@ -252,7 +252,7 @@ export default function Workflow() {
                   </DialogTrigger>
 
                   {selectedWorkflow && (
-                    <DialogContent className="!max-w-[90dvw] !w-[90dvw] !h-[90dvh] !max-h-[90dvh] overflow-auto p-4 flex flex-col gap-4">
+                    <DialogContent className="max-w-[90dvw]! w-[90dvw]! h-[90dvh]! max-h-[90dvh]! overflow-auto p-4 flex flex-col gap-4">
                       <DialogHeader>
                         <DialogTitle className="text-lg font-semibold">
                           Workflow Preview: {selectedWorkflow.workflow_name}

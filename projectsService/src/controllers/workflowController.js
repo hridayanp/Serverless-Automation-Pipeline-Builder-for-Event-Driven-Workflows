@@ -95,7 +95,8 @@ export const getWorkflows = async (event) => {
     let data;
 
     if (workflow_id) {
-      data = await workflowService.getWorkflowById(workflow_id);
+      const workflow = await workflowService.getWorkflowById(workflow_id);
+      data = workflow ? [workflow] : [];
     } else {
       data = await workflowService.getWorkflows(project_id);
     }

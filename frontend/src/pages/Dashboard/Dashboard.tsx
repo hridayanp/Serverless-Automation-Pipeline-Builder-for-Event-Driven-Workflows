@@ -1,8 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 
@@ -33,6 +33,9 @@ export default function Dashboard() {
   const [tasksData, setTasksData] = useState<any[]>([]);
   const [workflowsData, setWorkflowsData] = useState<any[]>([]);
 
+  /* -------------------------------
+     Navigation Handler
+  --------------------------------*/
   const handleCardClick = (label: string) => {
     switch (label) {
       case 'Total Projects':
@@ -52,65 +55,95 @@ export default function Dashboard() {
     }
   };
 
+  /* -------------------------------
+     Fetch Tasks
+  --------------------------------*/
   const fetchTasks = async (projectId: string) => {
     try {
       const res = await getTasks({ project_id: projectId });
-      if (res?.status === 200 && Array.isArray(res.data)) {
-        setTasksData(res.data);
-      } else {
-        setTasksData([]);
+
+      let data: any[] = [];
+
+      if (Array.isArray(res?.data)) {
+        data = res.data;
+      } else if (Array.isArray(res?.data?.data)) {
+        data = res.data.data;
       }
+
+      setTasksData(data);
     } catch (e) {
       console.error('Failed to fetch tasks:', e);
+      setTasksData([]);
     }
   };
 
+  /* -------------------------------
+     Fetch Workflows
+  --------------------------------*/
   const fetchWorkflows = async (projectId: string) => {
     try {
       const res = await getWorkflowsForProject({ project_id: projectId });
+
       const data = res?.data?.data;
+
       if (res?.status === 200 && Array.isArray(data)) {
         setWorkflowsData(data);
       } else {
         setWorkflowsData([]);
       }
     } catch (e) {
-      console.error('Error fetching workflows:', e);
+      console.error('Failed to fetch workflows:', e);
+      setWorkflowsData([]);
     }
   };
 
-  const fetchAllData = useRef(async () => {
+  /* -------------------------------
+     Load Dashboard Data
+  --------------------------------*/
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
 
-      if (!projects || projects.length === 0) {
-        const res = await getProjects();
-        const fetched = res?.data;
+      let projectList = projects;
 
-        if (Array.isArray(fetched) && fetched.length > 0) {
-          dispatch(setProjects(fetched));
-          const firstId = String(fetched[0].id);
-          await Promise.all([fetchTasks(firstId), fetchWorkflows(firstId)]);
+      /* Fetch projects if redux empty */
+      if (!projectList || projectList.length === 0) {
+        const res = await getProjects();
+        const fetchedProjects = res?.data;
+
+        if (Array.isArray(fetchedProjects) && fetchedProjects.length > 0) {
+          dispatch(setProjects(fetchedProjects));
+          projectList = fetchedProjects;
         } else {
           toast.error('No projects found');
           dispatch(setProjects([]));
+          return;
         }
-      } else {
-        const firstId = String(projects[0].id);
-        await Promise.all([fetchTasks(firstId), fetchWorkflows(firstId)]);
       }
+
+      const firstProjectId = projectList[0]?.id;
+
+      if (!firstProjectId) return;
+
+      await Promise.all([
+        fetchTasks(firstProjectId),
+        fetchWorkflows(firstProjectId),
+      ]);
     } catch (err) {
       toast.error('Failed to load dashboard data');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  });
+  };
 
   useEffect(() => {
-    fetchAllData.current();
+    fetchDashboardData();
   }, []);
 
+  /* -------------------------------
+     Stats Cards
+  --------------------------------*/
   const stats = [
     {
       label: 'Total Projects',
@@ -132,12 +165,15 @@ export default function Dashboard() {
     },
     {
       label: 'Total Workflows Executed',
-      value: 0,
+      value: 12, // Dummy for now
       footer:
         'This shows how many workflows actually ran — we’ll show this soon!',
     },
   ];
 
+  /* -------------------------------
+     Loading UI
+  --------------------------------*/
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[80vh]">
@@ -151,6 +187,9 @@ export default function Dashboard() {
     );
   }
 
+  /* -------------------------------
+     Dashboard UI
+  --------------------------------*/
   return (
     <div className="grid gap-6 p-4 max-w-7xl mx-auto lg:px-6">
       <SectionHeading
@@ -160,7 +199,8 @@ export default function Dashboard() {
 
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">Key Metrics</h2>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 @5xl/main:grid-cols-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:shadow-xs">
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 @5xl/main:grid-cols-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:shadow-xs">
           {stats.map((stat) => (
             <Card
               key={stat.label}
@@ -171,10 +211,12 @@ export default function Dashboard() {
                 <CardDescription className="text-md text-[#2d2d2d] mb-2">
                   {stat.label}
                 </CardDescription>
+
                 <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                   {stat.value}
                 </CardTitle>
               </CardHeader>
+
               <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
                 {stat.footer}
               </CardFooter>
