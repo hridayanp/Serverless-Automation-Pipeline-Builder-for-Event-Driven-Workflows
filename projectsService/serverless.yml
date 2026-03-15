@@ -205,6 +205,14 @@ functions:
           method: post
           authorizer: cognitoAuth
 
+  deleteWorkflow:
+    handler: handler.deleteWorkflow
+    events:
+      - httpApi:
+          path: /workflows/{workflow_id}
+          method: delete
+          authorizer: cognitoAuth
+
   # --------------------------------------------------------
   # Workflow Executor (async / internal)
   # --------------------------------------------------------

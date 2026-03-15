@@ -192,3 +192,39 @@ export const fetchWorkflowLogs = async (event) => {
     };
   }
 };
+
+/* ----------------------------------
+   DELETE WORKFLOW
+   DELETE /workflows/{workflow_id}
+---------------------------------- */
+export const deleteWorkflow = async (event) => {
+  const response = new CustomResponse();
+  const { workflow_id } = event.pathParameters || {};
+
+  try {
+    if (!workflow_id) {
+      throw new Error('workflow_id is required');
+    }
+
+    const result = await workflowService.deleteWorkflow(workflow_id);
+
+    response.status = 'SUCCESS';
+    response.message = 'Workflow deleted successfully';
+    response.data = result;
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(response),
+    };
+  } catch (err) {
+    response.status = 'FAILURE';
+    response.message = err.message || 'Workflow deletion failed';
+
+    return {
+      statusCode: err.message?.includes('required') ? 400 : 500,
+      headers,
+      body: JSON.stringify(response),
+    };
+  }
+};

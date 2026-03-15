@@ -4,6 +4,7 @@ import {
   getItem,
   scanTable,
   updateItem,
+  deleteItem,
 } from '../aws/dynamoService.js';
 import { runPythonScript } from '../../utils/scriptRunner.js';
 
@@ -228,4 +229,26 @@ export const serializeWorkflow = (workflow) => ({
 export const scheduledWorkflowRunner = async (event) => {
   const { workflow_id } = event.detail;
   await executeWorkflow(workflow_id);
+};
+
+/* --------------------------------------------------
+   DELETE WORKFLOW
+-------------------------------------------------- */
+export const deleteWorkflow = async (workflowId) => {
+  if (!workflowId) {
+    throw new Error('workflow_id is required');
+  }
+
+  const workflow = await getItem(WORKFLOW_TABLE, { id: workflowId });
+
+  if (!workflow) {
+    throw new Error('Workflow not found');
+  }
+
+  await deleteItem(WORKFLOW_TABLE, { id: workflowId });
+
+  return {
+    id: workflowId,
+    message: 'Workflow deleted successfully',
+  };
 };
