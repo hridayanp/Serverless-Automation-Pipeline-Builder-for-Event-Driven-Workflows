@@ -101,13 +101,6 @@ functions:
           method: get
           authorizer: cognitoAuth
 
-  executeTask:
-    handler: handler.executeTask
-    events:
-      - httpApi:
-          path: /tasks/{taskId}/execute
-          method: post
-          authorizer: cognitoAuth
 
   getTaskLogFile:
     handler: handler.getTaskLogFile

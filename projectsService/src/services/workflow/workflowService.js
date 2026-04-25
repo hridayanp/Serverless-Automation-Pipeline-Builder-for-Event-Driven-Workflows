@@ -6,7 +6,7 @@ import {
   updateItem,
   deleteItem,
 } from '../aws/dynamoService.js';
-import { runPythonScript } from '../../utils/scriptRunner.js';
+import { invokeAsync } from '../aws/lambdaService.js';
 
 const WORKFLOW_TABLE = process.env.TABLE_WORKFLOWS;
 const WORKFLOW_LOGS = process.env.TABLE_WORKFLOW_LOGS;
@@ -65,7 +65,7 @@ export const getWorkflows = async (projectId) => {
 };
 
 /* --------------------------------------------------
-   EXECUTE WORKFLOW (ENTRY POINT)
+   EXECUTE WORKFLOW (ENTRY POINT - ASYNC)
 -------------------------------------------------- */
 export const executeWorkflow = async (workflowId) => {
   const workflow = await getItem(WORKFLOW_TABLE, { id: workflowId });
@@ -73,6 +73,7 @@ export const executeWorkflow = async (workflowId) => {
 
   const runId = uuidv4();
 
+  // Initialize the workflow log
   await putItem(WORKFLOW_LOGS, {
     run_id: runId,
     workflow_id: workflowId,
@@ -80,72 +81,17 @@ export const executeWorkflow = async (workflowId) => {
     start_date: new Date().toISOString(),
   });
 
-  try {
-    await runWorkflowNode(workflow.tasks, workflow.environment_id, runId);
-
-    await updateItem(
-      WORKFLOW_LOGS,
-      { run_id: runId },
-      'SET #status = :s, end_date = :e',
-      {
-        ':s': 'COMPLETED',
-        ':e': new Date().toISOString(),
-      },
-      { '#status': 'status' },
-    );
-  } catch (err) {
-    await updateItem(
-      WORKFLOW_LOGS,
-      { run_id: runId },
-      'SET #status = :s, end_date = :e',
-      {
-        ':s': 'FAILED',
-        ':e': new Date().toISOString(),
-      },
-      { '#status': 'status' },
-    );
-    throw err;
-  }
+  // Invoke the workflow executor Lambda asynchronously
+  const functionName = `projectService-${process.env.STAGE || 'dev'}-workflowExecutor`;
+  
+  await invokeAsync(functionName, {
+    workflow,
+    runId,
+  });
 
   return { runId };
 };
 
-/* --------------------------------------------------
-   RECURSIVE WORKFLOW EXECUTION (CORE)
--------------------------------------------------- */
-const runWorkflowNode = async (taskNode, environmentId, runId) => {
-  const taskId = taskNode.task_id;
-
-  const taskLogId = uuidv4();
-  await putItem(TASK_LOGS, {
-    id: taskLogId,
-    run_id: runId,
-    task_id: taskId,
-    status: 'IN_PROGRESS',
-    start_date: new Date().toISOString(),
-  });
-
-  const exitCode = await runPythonScript({ taskId, environmentId });
-  const outcome = mapExitCodeToOutcome(exitCode);
-
-  await updateItem(
-    TASK_LOGS,
-    { id: taskLogId },
-    'SET #status = :s, end_date = :e',
-    {
-      ':s': outcome,
-      ':e': new Date().toISOString(),
-    },
-    { '#status': 'status' },
-  );
-
-  const children = taskNode.children || {};
-  const nextNode = children[outcome];
-
-  if (nextNode) {
-    await runWorkflowNode(nextNode, environmentId, runId);
-  }
-};
 
 /* --------------------------------------------------
    FETCH LOGS
@@ -212,12 +158,6 @@ const ensureNodeIds = (task) => {
   return task;
 };
 
-const mapExitCodeToOutcome = (code) => {
-  if (code === 0) return 'on_completion';
-  if (code === 1) return 'on_failure';
-  if (code === 2) return 'on_success';
-  return 'unknown';
-};
 
 export const serializeWorkflow = (workflow) => ({
   id: workflow.id,

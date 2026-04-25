@@ -90,34 +90,6 @@ export const getTasks = async (event) => {
   }
 };
 
-/* ============================================================================
-   3. EXECUTE TASK
-   - Downloads script from S3 and executes locally
-   ========================================================================= */
-export const executeTask = async (event) => {
-  const response = new CustomResponse();
-  try {
-    const { taskId } = event.pathParameters || {};
-    if (!taskId) {
-      response.status = 'FAILURE';
-      response.message = 'Missing taskId in path';
-      return { statusCode: 400, headers, body: JSON.stringify(response) };
-    }
-
-    const result = await taskService.executeTask(taskId);
-
-    response.status = 'SUCCESS';
-    response.message = 'Task executed successfully';
-    response.data = result;
-
-    return { statusCode: 200, headers, body: JSON.stringify(response) };
-  } catch (err) {
-    console.error('executeTask Error:', err);
-    response.status = 'FAILURE';
-    response.message = err.message || 'Failed to execute task';
-    return { statusCode: 500, headers, body: JSON.stringify(response) };
-  }
-};
 
 /* ============================================================================
    4. GET TASK LOG FILE

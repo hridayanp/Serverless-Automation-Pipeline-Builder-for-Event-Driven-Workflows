@@ -176,12 +176,45 @@ export const updateTaskStatus = async (taskId, status) => {
 /* ============================================================
    EXECUTE TASK — download script from S3 & run locally
    ============================================================ */
-export const executeTask = async (taskId) => {
+export const executeTask = async (taskId, runId = null) => {
   const task = await getTaskById(taskId);
   if (!task) throw new Error('Task not found');
 
+  const WORKFLOW_TASK_LOGS = process.env.TABLE_WORKFLOW_TASK_LOGS;
+
+  const updateStatus = async (status) => {
+    if (runId) {
+      // Track within workflow run
+      let updateExpression = 'SET #s = :s, updated_at = :u';
+      const expressionValues = {
+        ':s': status,
+        ':u': new Date().toISOString(),
+      };
+      const expressionNames = { '#s': 'status' };
+
+      if (status === 'RUNNING') {
+        updateExpression += ', start_date = :sd';
+        expressionValues[':sd'] = new Date().toISOString();
+      } else if (status === 'COMPLETED' || status === 'FAILED') {
+        updateExpression += ', end_date = :ed';
+        expressionValues[':ed'] = new Date().toISOString();
+      }
+
+      await updateItem(
+        WORKFLOW_TASK_LOGS,
+        { run_id: runId, task_id: taskId },
+        updateExpression,
+        expressionValues,
+        expressionNames,
+      );
+    } else {
+      // Standalone execution (global status)
+      await updateTaskStatus(taskId, status);
+    }
+  };
+
   if (!task.file_data_s3_key) {
-    await updateTaskStatus(taskId, 'FAILED');
+    await updateStatus('FAILED');
     throw new Error('Missing script file');
   }
 
@@ -195,7 +228,7 @@ export const executeTask = async (taskId) => {
   const fileObj = await getFile(BUCKET, task.file_data_s3_key);
   fs.writeFileSync(scriptPath, fileObj.buffer.toString());
 
-  await updateTaskStatus(taskId, 'RUNNING');
+  await updateStatus('RUNNING');
 
   // Execute the script
   const result = spawnSync('python3', [scriptPath], {
@@ -213,7 +246,7 @@ export const executeTask = async (taskId) => {
   const logKey = `tasks/${taskId}/${task.log_file_name}`;
   await putFile(BUCKET, logKey, Buffer.from(fullLog, 'utf8'), 'text/plain');
 
-  // Update task log key
+  // Update task log key in metadata
   await updateItem(
     TABLE,
     { id: taskId },
@@ -221,15 +254,15 @@ export const executeTask = async (taskId) => {
     {
       ':k': logKey,
       ':u': new Date().toISOString(),
-    }
+    },
   );
 
   if (exitCode !== 0) {
-    await updateTaskStatus(taskId, 'FAILED');
+    await updateStatus('FAILED');
     return { success: false, exitCode };
   }
 
-  await updateTaskStatus(taskId, 'COMPLETED');
+  await updateStatus('COMPLETED');
   return { success: true, exitCode: 0 };
 };
 

@@ -42,7 +42,6 @@ export const deleteProject = withAuth(projectController.deleteProject);
 // ------------------------------------------------------------------
 export const createTask = withAuth(taskController.createTask);
 export const getTasks = withAuth(taskController.getTasks);
-export const executeTask = withAuth(taskController.executeTask);
 export const getTaskLogFile = withAuth(taskController.getTaskLogFile);
 export const getTaskScriptFiles = withAuth(taskController.getTaskScriptFiles);
 
