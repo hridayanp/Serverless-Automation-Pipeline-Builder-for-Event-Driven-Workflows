@@ -89,8 +89,11 @@ export const createProjectEnvironment = async ({
     env_name,
     language,
     method,
+    file_name,
+    file_content, // Store the Base64 content so it can be retrieved later
     status: 'IN_PROGRESS',
     file_path: envFilePath,
+    created_at: new Date().toISOString(),
   };
 
   await putItem(TABLE_PROJECT_ENVS, envItem);

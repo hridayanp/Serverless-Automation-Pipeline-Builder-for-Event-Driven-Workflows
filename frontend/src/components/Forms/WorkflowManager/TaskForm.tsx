@@ -27,9 +27,17 @@ interface TaskFormProps {
 }
 
 function encodeToBase64(text: string): string {
-  return typeof window !== 'undefined'
-    ? btoa(unescape(encodeURIComponent(text)))
-    : '';
+  if (!text) return '';
+  try {
+    return btoa(
+      encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+        String.fromCharCode(parseInt(p1, 16))
+      )
+    );
+  } catch (e) {
+    console.error('Encoding error:', e);
+    return '';
+  }
 }
 
 export default function TaskForm({

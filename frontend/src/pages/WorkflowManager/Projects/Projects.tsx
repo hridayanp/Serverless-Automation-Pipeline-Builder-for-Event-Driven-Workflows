@@ -13,22 +13,37 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2 } from 'lucide-react';
+
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/Table/Table';
 import { SectionHeading } from '@/components/Headings/SectionHeading';
-import {
+
   
+import {
   deleteProjects,
   getProjects,
+  getProjectEnvironments,
 } from '@/api/ApiService';
 import toast from 'react-hot-toast';
+import { Eye, Plus, Trash2, Terminal, Code2, Settings2, FileCode2 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 export default function ProjectsPage() {
   const dispatch = useDispatch();
   const { projects } = useSelector((state: any) => state.workflow);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [envDialogOpen, setEnvDialogOpen] = useState(false);
+  const [loadingEnv, setLoadingEnv] = useState(false);
+  const [selectedEnvironments, setSelectedEnvironments] = useState<any[]>([]);
+  const [currentProject, setCurrentProject] = useState<any>(null);
   const [_, setIsSubmitting] = useState(false);
 
   // Ref-wrapped fetchProjects to preserve identity
@@ -36,13 +51,10 @@ export default function ProjectsPage() {
     try {
       setIsSubmitting(true);
       const res = await getProjects();
-      console.log('res', res);
+      const apiData = res?.data;
 
-      // ✅ FIX HERE
-      const fetched = res?.data?.data;
-
-      if (Array.isArray(fetched) && fetched.length > 0) {
-        dispatch(setProjects(fetched));
+      if (apiData?.status === 'SUCCESS' && Array.isArray(apiData?.data)) {
+        dispatch(setProjects(apiData.data));
       } else {
         toast.error('No projects found');
         dispatch(setProjects([]));
@@ -61,14 +73,36 @@ export default function ProjectsPage() {
     fetchProjectsRef.current();
   }, []);
 
-
   const handleWizardSuccess = () => {
     setDialogOpen(false);
     fetchProjectsRef.current();
   };
 
+  const handleViewEnvironments = async (project: any) => {
+    setCurrentProject(project);
+    setEnvDialogOpen(true);
+    setLoadingEnv(true);
+    setSelectedEnvironments([]);
+
+    try {
+      const res = await getProjectEnvironments({ projectId: project.id });
+      const apiData = res?.data;
+
+      if (apiData?.status === 'SUCCESS' && Array.isArray(apiData?.data)) {
+        setSelectedEnvironments(apiData.data);
+      } else {
+        toast.error('No environments found for this project');
+      }
+    } catch (error) {
+      console.error('Error fetching environments:', error);
+      toast.error('Failed to fetch environment details');
+    } finally {
+      setLoadingEnv(false);
+    }
+  };
+
   const handleDelete = async (row: any) => {
-    console.log('row', row);
+    if (!window.confirm('Are you sure you want to delete this project and all its environments?')) return;
 
     const payload = {
       project_id: row.id,
@@ -76,8 +110,7 @@ export default function ProjectsPage() {
 
     try {
       const res = await deleteProjects(payload);
-      console.log('res', res);
-      if (res?.status === 200 && res.data.success === true) {
+      if (res?.status === 200 && res.data.status === 'SUCCESS') {
         toast.success(
           res.data.message ||
             'Project and associated environments deleted successfully',
@@ -87,10 +120,23 @@ export default function ProjectsPage() {
         toast.error('Something went wrong. Please try again.');
       }
     } catch (e) {
-      console.log('e', e);
-      toast.error(
-        'Please contact administrator to delete a project and its related environments',
+      console.error('Delete error:', e);
+      toast.error('Failed to delete project');
+    }
+  };
+
+  const decodeBase64 = (str: string) => {
+    if (!str) return '';
+    try {
+      return decodeURIComponent(
+        atob(str)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
       );
+    } catch (e) {
+      console.error('Decoding error:', e);
+      return 'Error decoding content';
     }
   };
 
@@ -104,7 +150,6 @@ export default function ProjectsPage() {
         header: key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
         cell: ({ row }: any) => {
           const value = row.getValue(key);
-
           if (typeof value === 'object') {
             return (
               <pre className="text-xs text-muted-foreground whitespace-pre-wrap max-w-75 overflow-x-auto">
@@ -112,7 +157,6 @@ export default function ProjectsPage() {
               </pre>
             );
           }
-
           return <span>{value}</span>;
         },
       }));
@@ -121,12 +165,38 @@ export default function ProjectsPage() {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <div className="flex justify-center items-center mr-[20%]">
-          <Trash2
-            size={20}
-            className="text-red-600 cursor-pointer hover:text-red-800"
-            onClick={() => handleDelete(row.original)}
-          />
+        <div className="flex justify-center items-center gap-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className="cursor-pointer p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  onClick={() => handleViewEnvironments(row.original)}
+                >
+                  <Eye size={18} className="text-blue-600" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View environment details</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className="cursor-pointer p-2 hover:bg-red-50 rounded-full transition-colors"
+                  onClick={() => handleDelete(row.original)}
+                >
+                  <Trash2 size={18} className="text-red-600" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete project</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       ),
     };
@@ -154,16 +224,117 @@ export default function ProjectsPage() {
         columns={columns}
       />
 
+      {/* New Project Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-3xl overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>New Project</DialogTitle>
           </DialogHeader>
-
           <ProjectWizard
             onSuccess={handleWizardSuccess}
             onCancel={() => setDialogOpen(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* View Environments Dialog */}
+      <Dialog open={envDialogOpen} onOpenChange={setEnvDialogOpen}>
+        <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh] p-0 border-none shadow-2xl">
+          <div className="bg-slate-900 text-white p-6 rounded-t-lg">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <Terminal className="w-6 h-6 text-blue-400" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-bold tracking-tight text-white">
+                    Environment Details
+                  </DialogTitle>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Project: <span className="text-blue-400 font-medium">{currentProject?.name}</span>
+                  </p>
+                </div>
+              </div>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6 bg-slate-50">
+            {loadingEnv ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-slate-500 font-medium">Fetching environments...</p>
+              </div>
+            ) : selectedEnvironments.length > 0 ? (
+              <div className="space-y-6">
+                {selectedEnvironments.map((env) => (
+                  <div key={env.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                      <div className="flex items-center gap-2">
+                        <Settings2 className="w-5 h-5 text-slate-400" />
+                        <h3 className="font-bold text-slate-800 text-lg capitalize">{env.env_name}</h3>
+                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-100">
+                          {env.language}
+                        </Badge>
+                      </div>
+                      <Badge variant="outline" className="font-mono text-xs text-slate-500">
+                        ID: {env.id.slice(0, 8)}...
+                      </Badge>
+                    </div>
+
+                    <div className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-indigo-50 rounded-lg">
+                              <Code2 className="w-4 h-4 text-indigo-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Method</p>
+                              <p className="text-slate-700 font-medium">{env.method}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-emerald-50 rounded-lg">
+                              <FileCode2 className="w-4 h-4 text-emerald-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Config File</p>
+                              <p className="text-slate-700 font-medium">{env.file_name}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator className="my-6 bg-slate-100" />
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            Requirements
+                            <span className="text-xs font-normal text-slate-400">({env.file_name})</span>
+                          </p>
+                        </div>
+                        <div className="relative group">
+                          <pre className="bg-slate-900 text-slate-300 p-4 rounded-lg text-sm font-mono leading-relaxed overflow-x-auto max-h-[300px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800">
+                            {decodeBase64(env.file_content)}
+                          </pre>
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Badge className="bg-slate-800 text-slate-400 border-slate-700">Read Only</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300">
+                <p className="text-slate-400">No environments found for this project.</p>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
