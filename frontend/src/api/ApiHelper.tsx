@@ -8,6 +8,23 @@ import Axios, {
 
 const axiosApiInstance: AxiosInstance = Axios.create();
 
+// Response interceptor for global error handling
+axiosApiInstance.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response && error.response.status === 401) {
+      // Clear all local storage on unauthorized
+      localStorage.clear();
+      
+      // Force redirect to login/root
+      window.location.href = '/';
+      
+      return Promise.reject(error);
+    }
+    return Promise.reject(error);
+  }
+);
+
 const handleError = async (error?: AxiosError): Promise<void> => {
   if (error) {
     console.error(error);
