@@ -156,13 +156,18 @@ export default function Workflow() {
     );
   };
 
-  const handleExecute = async (workflowId: string) => {
+  const handleExecute = async (workflow: any) => {
     try {
       setLoading(true);
-      const res = await executeWorkflow({ workflow_id: workflowId });
+      const res = await executeWorkflow({ workflow_id: workflow.id });
       if (res?.status === 200) {
         toast.success('Workflow execution started!');
-        navigate('/workflow/jobs');
+        navigate('/workflow/jobs', {
+          state: {
+            projectId: selectedProjectId,
+            workflowName: workflow.workflow_name,
+          },
+        });
       } else {
         toast.error('Failed to start execution');
       }
@@ -321,7 +326,7 @@ export default function Workflow() {
       cell: ({ row }) => (
         <div className="flex gap-4 items-center justify-center mr-2">
           <button
-            onClick={() => handleExecute(row.original.id)}
+            onClick={() => handleExecute(row.original)}
             className="text-blue-600 hover:text-blue-800 cursor-pointer font-medium text-xs border border-blue-600 px-2 py-1 rounded"
             title="Run Workflow"
           >

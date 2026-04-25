@@ -38,11 +38,12 @@ import {
 
 import toast from 'react-hot-toast';
 import { format, isValid } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function JobsMonitorDashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { projects } = useSelector((state: any) => state.workflow);
 
   const [loading, setLoading] = useState(false);
@@ -76,9 +77,13 @@ export default function JobsMonitorDashboard() {
         const res = await getProjects();
         if (Array.isArray(res?.data) && res.data.length > 0) {
           dispatch(setProjectState(res.data));
-          const firstProjectId = String(res.data[0].id);
-          setSelectedProjectId(firstProjectId);
-          await fetchWorkflows(firstProjectId);
+
+          // Check if we have a project ID from navigation state
+          const targetProjectId =
+            location.state?.projectId?.toString() || res.data[0].id.toString();
+
+          setSelectedProjectId(targetProjectId);
+          await fetchWorkflows(targetProjectId);
         }
       } catch (e) {
         console.error('Error fetching projects:', e);
@@ -89,7 +94,7 @@ export default function JobsMonitorDashboard() {
     };
 
     fetchProjects();
-  }, [dispatch]);
+  }, [dispatch, location.state]);
 
   // Fetch workflows for a selected project
   const fetchWorkflows = async (projectId: string) => {
@@ -99,7 +104,10 @@ export default function JobsMonitorDashboard() {
       setWorkflows(workflowsData);
 
       if (workflowsData.length > 0) {
-        setSelectedWorkflowName(workflowsData[0].workflow_name);
+        // Check if we have a workflow name from navigation state
+        const targetWorkflowName =
+          location.state?.workflowName || workflowsData[0].workflow_name;
+        setSelectedWorkflowName(targetWorkflowName);
       } else {
         setSelectedWorkflowName(null);
       }
