@@ -5,10 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProjects } from '@/redux/slices/workflowSlice';
 
-import {
-  ProjectForm,
-  type ProjectFormValues,
-} from '@/components/Forms/WorkflowManager/ProjectForm';
+import { ProjectWizard } from '@/components/Forms/WorkflowManager/ProjectWizard';
 import {
   Dialog,
   DialogContent,
@@ -21,8 +18,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/Table/Table';
 import { SectionHeading } from '@/components/Headings/SectionHeading';
 import {
-  createProjectEnvironments,
-  createProjects,
+  
   deleteProjects,
   getProjects,
 } from '@/api/ApiService';
@@ -33,7 +29,7 @@ export default function ProjectsPage() {
   const { projects } = useSelector((state: any) => state.workflow);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [_, setIsSubmitting] = useState(false);
 
   // Ref-wrapped fetchProjects to preserve identity
   const fetchProjectsRef = useRef(async () => {
@@ -65,59 +61,10 @@ export default function ProjectsPage() {
     fetchProjectsRef.current();
   }, []);
 
-  const createProjectsEnv = async (projectId: any) => {
-    const payload = {
-      project_id: projectId,
-      env_name: 'dev',
-      language: 'python',
-      method: 'test',
-      file_name: 'requirements.txt',
-      file_content:
-        'bnVtcHkKcGFuZGFzCnJlcXVlc3RzCmJvdG8zCnB5dGhvbi1kYXRldXRpbApweXR6CmJlYXV0aWZ1bHNvdXA0CnNjaWtpdC1sZWFybgpqb2JsaWI=',
-    };
-    try {
-      const res = await createProjectEnvironments(payload);
-      console.log('res', res);
-    } catch (e) {
-      console.log('e', e);
-    }
-  };
 
-  const handleSubmit = async (values: ProjectFormValues) => {
-    setIsSubmitting(true);
-
-    try {
-      const res = await createProjects(values);
-      console.log('project res', res);
-
-      if (
-        res &&
-        res.data?.success === true &&
-        res?.data?.message === 'Project created successfully'
-      ) {
-        const projectId = res?.data?.data?.id;
-
-        toast.success(res.data.message);
-
-        // ✅ Create environment after project creation
-        if (projectId) {
-          await createProjectsEnv(projectId);
-          toast.success('Environment created successfully');
-        }
-
-        // refresh project list
-        await fetchProjectsRef.current();
-      } else {
-        toast.error('Project creation failed');
-      }
-    } catch (error: any) {
-      console.error(error);
-      toast.error('Project creation failed');
-    } finally {
-      // loading remains until env creation completes
-      setIsSubmitting(false);
-      setDialogOpen(false);
-    }
+  const handleWizardSuccess = () => {
+    setDialogOpen(false);
+    fetchProjectsRef.current();
   };
 
   const handleDelete = async (row: any) => {
@@ -213,10 +160,9 @@ export default function ProjectsPage() {
             <DialogTitle>New Project</DialogTitle>
           </DialogHeader>
 
-          <ProjectForm
-            onSubmit={handleSubmit}
+          <ProjectWizard
+            onSuccess={handleWizardSuccess}
             onCancel={() => setDialogOpen(false)}
-            isSubmitting={isSubmitting}
           />
         </DialogContent>
       </Dialog>

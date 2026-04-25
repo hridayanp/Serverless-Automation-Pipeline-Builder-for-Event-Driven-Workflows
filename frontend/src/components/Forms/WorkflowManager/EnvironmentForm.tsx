@@ -1,5 +1,6 @@
 'use client';
 
+import { useForm,  } from 'react-hook-form';
 import {
   Form,
   FormField,
@@ -9,162 +10,194 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   Select,
-  SelectTrigger,
-  SelectItem,
   SelectContent,
+  SelectItem,
+  SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
 
 export type EnvironmentFormValues = {
   env_name: string;
   language: string;
   method: string;
-  file: File | null;
+  file_name: string;
+  file_content: string; // base64
 };
 
-const languageOptions = ['python'];
-const methodOptions = ['Venv', 'Dockerfile', 'Other'];
-
 type Props = {
-  initialValues?: EnvironmentFormValues;
   onSubmit: (data: EnvironmentFormValues) => void;
-  onCancel?: () => void;
+  onBack: () => void;
   isSubmitting?: boolean;
 };
 
-export const EnvironmentForm = ({
-  initialValues,
-  onSubmit,
-  onCancel,
-  isSubmitting,
-}: Props) => {
+function encodeToBase64(text: string): string {
+  return typeof window !== 'undefined'
+    ? btoa(unescape(encodeURIComponent(text)))
+    : '';
+}
+
+export const EnvironmentForm = ({ onSubmit, onBack, isSubmitting }: Props) => {
   const form = useForm<EnvironmentFormValues>({
-    defaultValues: initialValues ?? {
-      env_name: '',
+    defaultValues: {
+      env_name: 'dev',
       language: 'python',
-      method: 'Venv',
-      file: null,
+      method: 'requirements.txt',
+      file_name: 'requirements.txt',
+      file_content: '',
     },
   });
 
+  const [inputType, setInputType] = useState<'editor' | 'upload'>('editor');
+  const [rawContent, setRawContent] = useState('');
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const content = reader.result as string;
+      const base64 = encodeToBase64(content);
+      form.setValue('file_content', base64);
+      form.setValue('file_name', file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleFormSubmit = (data: EnvironmentFormValues) => {
+    if (inputType === 'editor') {
+      data.file_content = encodeToBase64(rawContent);
+    }
+    onSubmit(data);
+  };
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {/* Environment Name */}
-        <FormField
-          control={form.control}
-          name="env_name"
-          rules={{ required: 'Environment name is required' }}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Environment Name</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., dev-env or staging-env" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Language and Method in 2-column layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Language */}
-          <FormField
-            control={form.control}
-            name="language"
-            rules={{ required: 'Language is required' }}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Language</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled
-                >
+    <Card className="w-full p-6 space-y-6">
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleFormSubmit)}
+          className="space-y-6"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="env_name"
+              rules={{ required: 'Environment name is required' }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Environment Name</FormLabel>
                   <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
+                    <Input placeholder="e.g. dev, prod" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    {languageOptions.map((lang) => (
-                      <SelectItem key={lang} value={lang}>
-                        {lang}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Method */}
+            <FormField
+              control={form.control}
+              name="language"
+              rules={{ required: 'Language is required' }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Language</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Language" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="python">Python</SelectItem>
+                      <SelectItem value="nodejs">Node.js</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           <FormField
             control={form.control}
             name="method"
+            rules={{ required: 'Method is required' }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Setup Method</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select method" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {methodOptions.map((method) => (
-                      <SelectItem key={method} value={method}>
-                        {method}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormLabel>Installation Method</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. requirements.txt, pip" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
 
-        {/* File Upload */}
-        {/* <FormField
-          control={form.control}
-          name="file"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Upload Config File</FormLabel>
-              <FormControl>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <FormLabel>Requirements Data</FormLabel>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={inputType === 'editor' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setInputType('editor')}
+                >
+                  Editor
+                </Button>
+                <Button
+                  type="button"
+                  variant={inputType === 'upload' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setInputType('upload')}
+                >
+                  Upload
+                </Button>
+              </div>
+            </div>
+
+            {inputType === 'upload' ? (
+              <Input type="file" accept=".txt" onChange={handleFileUpload} />
+            ) : (
+              <div className="space-y-2">
                 <Input
-                  type="file"
-                  accept=".yml,.yaml,.dockerfile,.txt"
-                  onChange={(e) => field.onChange(e.target.files?.[0] || null)}
+                  placeholder="File name (e.g. requirements.txt)"
+                  {...form.register('file_name')}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        /> */}
+                <Textarea
+                  placeholder="Enter your requirements here..."
+                  className="min-h-[150px] font-mono"
+                  value={rawContent}
+                  onChange={(e) => setRawContent(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
 
-        {/* Buttons */}
-        <div className="flex justify-end gap-4">
-          {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+          <div className="flex justify-between gap-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onBack}
+              disabled={isSubmitting}
+            >
+              Back
             </Button>
-          )}
-          <Button type="submit" disabled={isSubmitting}>
-            {initialValues ? 'Update Environment' : 'Add Environment'}
-          </Button>
-        </div>
-      </form>
-    </Form>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating Project...' : 'Add Project & Environment'}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </Card>
   );
 };
