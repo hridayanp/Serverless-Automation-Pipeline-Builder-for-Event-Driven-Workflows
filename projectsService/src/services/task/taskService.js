@@ -31,6 +31,23 @@ export const createTask = async ({
   script_folder_name,
   log_file_name,
 }) => {
+  // --- Validation ---
+  if (!project_id || !environment_id) {
+    throw new Error('project_id and environment_id are required');
+  }
+
+  // Ensure Project exists
+  const project = await getItem(process.env.TABLE_PROJECTS, { id: project_id });
+  if (!project) throw new Error('Project not found');
+
+  // Ensure Environment exists and belongs to the project
+  const allEnvs = await scanTable(process.env.TABLE_PROJECT_ENVS);
+  const env = allEnvs.find(
+    (e) => e.id === environment_id && e.project_id === project_id,
+  );
+  if (!env)
+    throw new Error('Environment not found or does not belong to this project');
+
   const taskId = uuidv4();
   const now = new Date().toISOString();
 
@@ -169,7 +186,7 @@ export const updateTaskStatus = async (taskId, status) => {
       ':s': status,
       ':u': new Date().toISOString(),
     },
-    { '#s': 'status' }
+    { '#s': 'status' },
   );
 };
 
@@ -224,46 +241,58 @@ export const executeTask = async (taskId, runId = null) => {
 
   const scriptPath = path.join(scriptDir, 'script.py');
 
-  // Download script from S3
-  const fileObj = await getFile(BUCKET, task.file_data_s3_key);
-  fs.writeFileSync(scriptPath, fileObj.buffer.toString());
+  try {
+    // Download script from S3
+    const fileObj = await getFile(BUCKET, task.file_data_s3_key);
+    fs.writeFileSync(scriptPath, fileObj.buffer.toString());
 
-  await updateStatus('RUNNING');
+    await updateStatus('RUNNING');
 
-  // Execute the script
-  const result = spawnSync('python3', [scriptPath], {
-    encoding: 'utf8',
-    maxBuffer: 10 * 1024 * 1024,
-  });
+    // Execute the script
+    const result = spawnSync('python3', [scriptPath], {
+      encoding: 'utf8',
+      maxBuffer: 10 * 1024 * 1024,
+    });
 
-  const stdout = result.stdout || '';
-  const stderr = result.stderr || '';
-  const exitCode = result.status;
+    const stdout = result.stdout || '';
+    const stderr = result.stderr || '';
+    const exitCode = result.status;
 
-  const fullLog = `=== STDOUT ===\n${stdout}\n\n=== STDERR ===\n${stderr}\nexitCode: ${exitCode}`;
+    const fullLog = `=== STDOUT ===\n${stdout}\n\n=== STDERR ===\n${stderr}\nexitCode: ${exitCode}`;
 
-  // Upload logs to S3
-  const logKey = `tasks/${taskId}/${task.log_file_name}`;
-  await putFile(BUCKET, logKey, Buffer.from(fullLog, 'utf8'), 'text/plain');
+    // Upload logs to S3
+    const logKey = `tasks/${taskId}/${task.log_file_name}`;
+    await putFile(BUCKET, logKey, Buffer.from(fullLog, 'utf8'), 'text/plain');
 
-  // Update task log key in metadata
-  await updateItem(
-    TABLE,
-    { id: taskId },
-    'SET log_file_s3_key = :k, updated_at = :u',
-    {
+    // Update task log key in metadata
+    await updateItem(TABLE, { id: taskId }, 'SET log_file_s3_key = :k, updated_at = :u', {
       ':k': logKey,
       ':u': new Date().toISOString(),
-    },
-  );
+    });
 
-  if (exitCode !== 0) {
-    await updateStatus('FAILED');
-    return { success: false, exitCode };
+    if (exitCode !== 0) {
+      await updateStatus('FAILED');
+      return { success: false, exitCode };
+    }
+
+    await updateStatus('COMPLETED');
+    return { success: true, exitCode: 0 };
+  } finally {
+    // Cleanup temporary files to prevent disk filling in Lambda
+    if (fs.existsSync(scriptDir)) {
+      fs.rmSync(scriptDir, { recursive: true, force: true });
+    }
   }
+};
 
-  await updateStatus('COMPLETED');
-  return { success: true, exitCode: 0 };
+/* ============================================================
+   DELETE TASKS BY PROJECT (CASCADE)
+   ============================================================ */
+export const deleteTasksByProject = async (projectId) => {
+  const tasks = await getAllTasks(projectId);
+  if (tasks.length > 0) {
+    await Promise.all(tasks.map((t) => deleteItem(TABLE, { id: t.id })));
+  }
 };
 
 /* ============================================================

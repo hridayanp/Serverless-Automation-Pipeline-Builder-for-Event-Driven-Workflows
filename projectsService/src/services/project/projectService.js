@@ -9,6 +9,8 @@ import {
   updateItem,
   deleteItem,
 } from '../aws/dynamoService.js';
+import * as taskService from '../task/taskService.js';
+import * as workflowService from '../workflow/workflowService.js';
 import {
   TABLE_PROJECTS,
   TABLE_PROJECT_ENVS,
@@ -119,7 +121,8 @@ export const getProjectEnvironments = async (projectId) => {
   return envs.filter((e) => e.project_id === projectId);
 };
 
-// Delete project (and its environments if any)
+
+// Delete project (and its environments, tasks, workflows)
 export const deleteProject = async (projectId) => {
   // 1️⃣ Check if project exists
   const project = await getItem(TABLE_PROJECTS, { id: projectId });
@@ -128,7 +131,7 @@ export const deleteProject = async (projectId) => {
     throw new Error('Project not found');
   }
 
-  // 2️⃣ Delete all environments linked to this project (background)
+  // 2️⃣ Delete all environments linked to this project
   const allEnvs = await scanTable(TABLE_PROJECT_ENVS);
   const relatedEnvs = allEnvs.filter((env) => env.project_id === projectId);
 
@@ -138,10 +141,16 @@ export const deleteProject = async (projectId) => {
     );
   }
 
-  // 3️⃣ Delete project record
+  // 3️⃣ Delete all tasks linked to this project (CASCADE)
+  await taskService.deleteTasksByProject(projectId);
+
+  // 4️⃣ Delete all workflows linked to this project (CASCADE)
+  await workflowService.deleteWorkflowsByProject(projectId);
+
+  // 5️⃣ Delete project record
   await deleteItem(TABLE_PROJECTS, { id: projectId });
 
-  // 4️⃣ Remove folder from /tmp (if exists)
+  // 6️⃣ Remove folder from /tmp (if exists)
   const basePath = '/tmp';
   const projectPath = path.join(basePath, projectId);
 
@@ -151,6 +160,6 @@ export const deleteProject = async (projectId) => {
 
   return {
     status: 'SUCCESS',
-    message: 'Project and associated environments deleted successfully',
+    message: 'Project and all associated data deleted successfully',
   };
 };

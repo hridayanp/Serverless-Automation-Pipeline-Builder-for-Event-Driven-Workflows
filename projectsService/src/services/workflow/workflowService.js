@@ -20,6 +20,10 @@ export const createWorkflow = async (workflow) => {
     throw new Error('Invalid workflow payload');
   }
 
+  // Ensure Project exists
+  const project = await getItem(process.env.TABLE_PROJECTS, { id: workflow.project_id });
+  if (!project) throw new Error('Project not found');
+
   const id = uuidv4();
 
   const tasks = ensureNodeIds(JSON.parse(JSON.stringify(workflow.tasks)));
@@ -83,7 +87,7 @@ export const executeWorkflow = async (workflowId) => {
 
   // Invoke the workflow executor Lambda asynchronously
   const functionName = `projectService-${process.env.STAGE || 'dev'}-workflowExecutor`;
-  
+
   await invokeAsync(functionName, {
     workflow,
     runId,
@@ -91,7 +95,6 @@ export const executeWorkflow = async (workflowId) => {
 
   return { runId };
 };
-
 
 /* --------------------------------------------------
    FETCH LOGS
@@ -158,7 +161,6 @@ const ensureNodeIds = (task) => {
   return task;
 };
 
-
 export const serializeWorkflow = (workflow) => ({
   id: workflow.id,
   workflow_name: workflow.workflow_name,
@@ -191,4 +193,15 @@ export const deleteWorkflow = async (workflowId) => {
     id: workflowId,
     message: 'Workflow deleted successfully',
   };
+};
+
+/* --------------------------------------------------
+   DELETE WORKFLOWS BY PROJECT (CASCADE)
+-------------------------------------------------- */
+export const deleteWorkflowsByProject = async (projectId) => {
+  const workflows = await scanTable(WORKFLOW_TABLE);
+  const related = workflows.filter((w) => w.project_id === projectId);
+  if (related.length > 0) {
+    await Promise.all(related.map((w) => deleteItem(WORKFLOW_TABLE, { id: w.id })));
+  }
 };
