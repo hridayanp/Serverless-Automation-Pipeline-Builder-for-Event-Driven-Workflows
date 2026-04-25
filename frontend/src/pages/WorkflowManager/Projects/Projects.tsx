@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProjects } from '@/redux/slices/workflowSlice';
 
@@ -61,12 +61,12 @@ export default function ProjectsPage() {
   const [loadingEnv, setLoadingEnv] = useState(false);
   const [selectedEnvironments, setSelectedEnvironments] = useState<any[]>([]);
   const [currentProject, setCurrentProject] = useState<any>(null);
-  const [_, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Ref-wrapped fetchProjects to preserve identity
-  const fetchProjectsRef = useRef(async () => {
+  // ✅ Single fetch function — correct shape: res.data.data
+  const fetchProjects = useCallback(async () => {
+    setIsLoading(true);
     try {
-      setIsSubmitting(true);
       const res = await getProjects();
       const apiData = res?.data;
 
@@ -81,18 +81,18 @@ export default function ProjectsPage() {
       toast.error('Failed to fetch projects');
       dispatch(setProjects([]));
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
-  });
+  }, [dispatch]);
 
-  // Only fetch if Redux store is empty
+  // ✅ Single useEffect — no duplicate calls
   useEffect(() => {
-    fetchProjectsRef.current();
-  }, []);
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleWizardSuccess = () => {
     setDialogOpen(false);
-    fetchProjectsRef.current();
+    fetchProjects();
   };
 
   const handleViewEnvironments = async (project: any) => {
@@ -137,7 +137,7 @@ export default function ProjectsPage() {
           res.data.message ||
             'Project and associated environments deleted successfully',
         );
-        fetchProjectsRef.current();
+        fetchProjects();
       } else {
         toast.error('Something went wrong. Please try again.');
       }
@@ -230,19 +230,13 @@ export default function ProjectsPage() {
   }, [projects]);
 
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
-  const [isLoading, setIsLoading] = useState(true);
 
   // Stats calculation
   const stats = useMemo(() => {
     const projectList = Array.isArray(projects) ? projects : [];
     
-    // Unique folders
     const uniqueFolders = new Set(projectList.map(p => p.script_folder)).size;
-    
-    // Documentation coverage
     const documented = projectList.filter(p => p.description && p.description.length > 0).length;
-    
-    // Name complexity (avg length)
     const avgNameLength = projectList.length > 0 
       ? (projectList.reduce((acc, p) => acc + (p.name?.length || 0), 0) / projectList.length).toFixed(0)
       : '0';
@@ -254,35 +248,6 @@ export default function ProjectsPage() {
       { label: 'Avg Name Meta', value: `${avgNameLength}ch`, icon: Terminal, color: 'primary' }
     ];
   }, [projects]);
-
-  const hasFetched = useRef(false);
-
-  const fetchProjects = useCallback(async () => {
-    // Only set loading if it's the first fetch to avoid flickering on re-renders
-    if (!hasFetched.current) setIsLoading(true);
-    
-    try {
-      const response = await getProjects();
-      if (response && response.data) {
-        dispatch(setProjects(response.data));
-      } else {
-        dispatch(setProjects([]));
-      }
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      toast.error('Failed to load projects');
-      dispatch(setProjects([]));
-    } finally {
-      setIsLoading(false);
-      hasFetched.current = true;
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!hasFetched.current) {
-      fetchProjects();
-    }
-  }, [fetchProjects]);
 
   if (isLoading) {
     return (
