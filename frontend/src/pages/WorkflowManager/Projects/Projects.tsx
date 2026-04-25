@@ -173,7 +173,7 @@ export default function ProjectsPage() {
                   className="cursor-pointer p-2 hover:bg-gray-100 rounded-full transition-colors"
                   onClick={() => handleViewEnvironments(row.original)}
                 >
-                  <Eye size={18} className="text-blue-600" />
+                  <Eye size={18} className="text-primary" />
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -243,15 +243,15 @@ export default function ProjectsPage() {
           <div className="bg-slate-900 text-white p-6 rounded-t-lg">
             <DialogHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <Terminal className="w-6 h-6 text-blue-400" />
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <Terminal className="w-6 h-6 text-primary/70" />
                 </div>
                 <div>
                   <DialogTitle className="text-2xl font-bold tracking-tight text-white">
                     Environment Details
                   </DialogTitle>
                   <p className="text-slate-400 text-sm mt-1">
-                    Project: <span className="text-blue-400 font-medium">{currentProject?.name}</span>
+                    Project: <span className="text-primary/70 font-medium">{currentProject?.name}</span>
                   </p>
                 </div>
               </div>
@@ -261,7 +261,7 @@ export default function ProjectsPage() {
           <div className="p-6 bg-slate-50">
             {loadingEnv ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                 <p className="text-slate-500 font-medium">Fetching environments...</p>
               </div>
             ) : selectedEnvironments.length > 0 ? (

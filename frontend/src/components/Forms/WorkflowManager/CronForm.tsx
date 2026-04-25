@@ -111,7 +111,7 @@ export default function CronForm({
             <span className={getClass(partStatus.weekday)}>Day(week)</span>
 
             <span
-              className="ml-auto text-blue-600 cursor-pointer underline"
+              className="ml-auto text-primary cursor-pointer underline"
               onClick={() => setShowLegend((prev) => !prev)}
             >
               {showLegend ? 'Hide' : 'Learn More'}

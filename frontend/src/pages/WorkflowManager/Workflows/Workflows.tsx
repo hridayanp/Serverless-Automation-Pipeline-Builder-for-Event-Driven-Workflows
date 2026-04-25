@@ -289,7 +289,7 @@ export default function Workflow() {
                         setSelectedWorkflow(row.original);
                         setIsDialogOpen(true);
                       }}
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-primary hover:underline"
                     >
                       Show More...
                     </button>
@@ -327,7 +327,7 @@ export default function Workflow() {
         <div className="flex gap-4 items-center justify-center mr-2">
           <button
             onClick={() => handleExecute(row.original)}
-            className="text-blue-600 hover:text-blue-800 cursor-pointer font-medium text-xs border border-blue-600 px-2 py-1 rounded"
+            className="text-primary hover:text-primary/80 cursor-pointer font-medium text-xs border border-primary px-2 py-1 rounded"
             title="Run Workflow"
           >
             Run
@@ -382,7 +382,7 @@ export default function Workflow() {
       {loading ? (
         <div className="w-full py-20 flex justify-center items-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-t-transparent border-blue-600 rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-t-transparent border-primary rounded-full animate-spin" />
             <p className="text-lg font-medium text-gray-700">
               Loading workflows...
             </p>

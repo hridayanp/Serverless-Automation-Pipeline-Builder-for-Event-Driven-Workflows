@@ -144,7 +144,7 @@ export default function CronFieldForm({
 
             <div className="w-[20%]">
               <span
-                className="text-blue-600 cursor-pointer underline text-sm pt-1 float-right"
+                className="text-primary cursor-pointer underline text-sm pt-1 float-right"
                 onClick={() => setShowLegend((prev) => !prev)}
               >
                 {showLegend ? 'Hide' : 'Learn More'}

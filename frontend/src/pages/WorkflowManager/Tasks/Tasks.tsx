@@ -179,7 +179,7 @@ export default function Tasks() {
               />
               <Pencil
                 size={18}
-                className="cursor-pointer text-blue-600 hover:text-blue-800"
+                className="cursor-pointer text-primary hover:text-primary/80"
                 onClick={() => handleEdit(task)}
               />
               <Trash2
@@ -234,7 +234,7 @@ export default function Tasks() {
       {loading ? (
         <div className="w-full py-20 flex justify-center items-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-t-transparent border-blue-600 rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-t-transparent border-primary rounded-full animate-spin" />
             <p className="text-lg font-medium text-gray-700">
               Loading tasks...
             </p>

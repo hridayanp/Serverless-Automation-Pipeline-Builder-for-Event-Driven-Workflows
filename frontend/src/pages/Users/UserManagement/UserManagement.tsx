@@ -123,7 +123,7 @@ export default function UserManagement() {
           <div className="flex gap-3 items-center">
             <Pencil
               size={20}
-              className="text-blue-600 cursor-pointer hover:text-blue-800"
+              className="text-primary cursor-pointer hover:text-primary/80"
               onClick={() => handleEdit(user)}
             />
             <Trash2

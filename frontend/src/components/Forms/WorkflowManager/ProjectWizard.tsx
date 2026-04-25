@@ -62,11 +62,11 @@ export const ProjectWizard = ({ onSuccess, onCancel }: Props) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4 mb-4">
-        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step === 1 ? 'bg-blue-600 text-white' : 'bg-green-100 text-green-600'}`}>
+        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step === 1 ? 'bg-primary text-white' : 'bg-green-100 text-green-600'}`}>
           {step > 1 ? '✓' : '1'}
         </div>
         <div className="h-px w-8 bg-gray-200" />
-        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step === 2 ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step === 2 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}>
           2
         </div>
         <span className="text-sm font-medium text-gray-500">
