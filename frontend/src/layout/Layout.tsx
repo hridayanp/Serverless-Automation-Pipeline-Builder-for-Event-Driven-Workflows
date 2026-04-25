@@ -93,7 +93,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </header>
 
           {/* Scrollable Page Content */}
-          <main className="flex-1 overflow-auto p-4 thin-scrollbar">
+          <main className="flex-1 overflow-auto thin-scrollbar">
             {children}
           </main>
         </SidebarInset>

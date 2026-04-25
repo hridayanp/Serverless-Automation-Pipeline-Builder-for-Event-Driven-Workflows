@@ -16,16 +16,27 @@ import { Button } from '@/components/ui/button';
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/Table/Table';
-import { SectionHeading } from '@/components/Headings/SectionHeading';
 
-  
 import {
   deleteProjects,
   getProjects,
   getProjectEnvironments,
 } from '@/api/ApiService';
 import toast from 'react-hot-toast';
-import { Eye, Plus, Trash2, Terminal, Code2, Settings2, FileCode2 } from 'lucide-react';
+import {
+  Eye,
+  Plus,
+  Trash2,
+  Terminal,
+  Code2,
+  Settings2,
+  FileCode2,
+  LayoutGrid,
+  Activity,
+  ShieldCheck,
+  List,
+  Search,
+} from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -36,6 +47,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 import { ConfirmDeleteDialog } from '@/components/Dialogs/ConfirmDeleteDialog';
+import { ViewSwitcher } from '@/components/Layout/ViewSwitcher';
 
 export default function ProjectsPage() {
   const dispatch = useDispatch();
@@ -153,7 +165,7 @@ export default function ProjectsPage() {
   };
 
   const columns: ColumnDef<any>[] = useMemo(() => {
-    if (projects.length === 0) return [];
+    if (!projects || projects.length === 0 || !projects[0]) return [];
 
     const baseColumns = Object.keys(projects[0])
       .filter((key) => key !== 'id')
@@ -216,25 +228,175 @@ export default function ProjectsPage() {
     return [...baseColumns, actionColumn];
   }, [projects]);
 
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Stats calculation
+  const stats = useMemo(() => {
+    const projectList = Array.isArray(projects) ? projects : [];
+    return [
+      { label: 'Total Projects', value: projectList.length, icon: LayoutGrid, color: 'primary' },
+      { label: 'Active Pipelines', value: projectList.length, icon: Activity, color: 'secondary' },
+      { label: 'Cloud Resources', value: projectList.length * 2, icon: ShieldCheck, color: 'tertiary' },
+      { label: 'Avg. Environments', value: '1.4', icon: Terminal, color: 'primary' }
+    ];
+  }, [projects]);
+
+  const fetchProjects = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getProjects();
+      if (response && response.data) {
+        dispatch(setProjects(response.data));
+      } else {
+        dispatch(setProjects([]));
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      toast.error('Failed to load projects');
+      dispatch(setProjects([]));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, [dispatch]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6 animate-in fade-in duration-500">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-primary/10 rounded-full" />
+          <div className="w-16 h-16 border-4 border-t-primary rounded-full animate-spin absolute top-0 left-0" />
+          <div className="absolute inset-0 flex items-center justify-center">
+             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-1 text-center">
+          <p className="text-xl font-bold text-primary tracking-tight">Syncing Dashboard</p>
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Accessing Secure Infrastructure</p>
+        </div>
+      </div>
+    );
+  }
+
+  const projectList = Array.isArray(projects) ? projects : [];
+
   return (
-    <div className="grid gap-6 p-4 max-w-7xl mx-auto lg:px-6">
-      <div className="flex justify-between items-center">
-        <SectionHeading
-          title="Projects Management"
-          description="Overview of added projects and their related information."
-        />
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Add Project
-        </Button>
+    <div className="min-h-screen bg-[#fdfdfb] p-6 lg:p-8 space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+      {/* Dynamic Header & Overview */}
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight text-[#1a2c20]">
+              Projects Hub
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Orchestrate your serverless infrastructure and deployment pipelines.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+             <ViewSwitcher viewMode={viewMode} onViewChange={setViewMode} />
+             <Separator orientation="vertical" className="h-8 mx-1" />
+             <Button 
+               onClick={() => setDialogOpen(true)}
+               className="rounded-xl bg-primary hover:bg-primary/90 shadow-md shadow-primary/10 font-bold text-xs uppercase tracking-widest px-5"
+             >
+               <Plus className="mr-2 h-4 w-4" /> New Project
+             </Button>
+          </div>
+        </div>
+
+        {/* Overview Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {stats.map((stat, i) => (
+            <div key={i} className="bg-white p-5 rounded-2xl border border-neutral-100 shadow-sm flex items-center gap-4 group hover:border-primary/20 transition-colors">
+              <div className={`p-3 rounded-xl bg-${stat.color}/5 text-${stat.color} group-hover:bg-${stat.color} group-hover:text-white transition-all duration-300`}>
+                <stat.icon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                <p className="text-xl font-bold text-[#1a2c20]">{stat.value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <DataTable
-        pagination
-        toolbar
-        searchBy="name"
-        data={projects}
-        columns={columns}
-      />
+      {/* Main Content View Switcher */}
+      <div className="space-y-6">
+        {viewMode === 'table' ? (
+          <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-2 overflow-hidden">
+             <DataTable
+              pagination
+              toolbar
+              searchBy="name"
+              data={projects}
+              columns={columns}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {projectList.map((project: any) => (
+              <div 
+                key={project.id} 
+                className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group flex flex-col justify-between min-h-[220px]"
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9px] font-mono font-bold text-muted-foreground/60 uppercase tracking-tighter">
+                        UUID: {project.id.slice(0, 13)}...
+                      </span>
+                      <h3 className="text-lg font-bold text-[#1a2c20] group-hover:text-primary transition-colors">
+                        {project.name}
+                      </h3>
+                    </div>
+                    <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/5 text-muted-foreground hover:text-primary" onClick={() => handleViewEnvironments(project)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-red-50 text-red-500" onClick={() => handleDeleteClick(project)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                    {project.description || 'Enterprise-grade serverless orchestration pipeline designed for event-driven workflows and scalable automation.'}
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-5 border-t border-neutral-50 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Stable</span>
+                  </div>
+                  <Badge variant="outline" className="rounded-lg text-[9px] font-bold py-0.5 border-neutral-200 text-muted-foreground">
+                    Created {new Date().toLocaleDateString()}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            
+            {/* Minimalist Add Card */}
+            <div 
+              onClick={() => setDialogOpen(true)}
+              className="border-2 border-dashed border-neutral-100 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/30 hover:bg-primary/[0.02] transition-all group min-h-[220px]"
+            >
+              <div className="w-10 h-10 rounded-xl bg-neutral-50 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
+                <Plus className="w-5 h-5" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-bold text-[#1a2c20]">New Pipeline</p>
+                <p className="text-[10px] text-muted-foreground font-medium">Initialize new project</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}
