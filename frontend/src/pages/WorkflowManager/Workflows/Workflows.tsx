@@ -40,6 +40,7 @@ import {
   setProjects as setProjectState,
   setTasks,
 } from '@/redux/slices/workflowSlice';
+import { ConfirmDeleteDialog } from '@/components/Dialogs/ConfirmDeleteDialog';
 
 export default function Workflow() {
   const navigate = useNavigate();
@@ -51,6 +52,10 @@ export default function Workflow() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [workflowToDeleteId, setWorkflowToDeleteId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     dispatch(setTasks([]));
@@ -179,13 +184,17 @@ export default function Workflow() {
     }
   };
 
-  const handleDelete = async (workflowId: string) => {
-    if (!window.confirm('Are you sure you want to delete this workflow?'))
-      return;
+  const handleDeleteClick = (workflowId: string) => {
+    setWorkflowToDeleteId(workflowId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!workflowToDeleteId) return;
 
     try {
       setLoading(true);
-      const res = await deleteWorkflowApi({ workflow_id: workflowId });
+      const res = await deleteWorkflowApi({ workflow_id: workflowToDeleteId });
       if (res?.status === 200) {
         toast.success('Workflow deleted successfully');
         fetchWorkflows(selectedProjectId);
@@ -197,6 +206,8 @@ export default function Workflow() {
       toast.error('Error deleting workflow');
     } finally {
       setLoading(false);
+      setDeleteDialogOpen(false);
+      setWorkflowToDeleteId(null);
     }
   };
 
@@ -333,7 +344,7 @@ export default function Workflow() {
             Run
           </button>
           <button
-            onClick={() => handleDelete(row.original.id)}
+            onClick={() => handleDeleteClick(row.original.id)}
             className="text-red-600 hover:text-red-800 cursor-pointer"
             title="Delete"
           >
@@ -348,6 +359,13 @@ export default function Workflow() {
 
   return (
     <div className="grid gap-6 p-4 max-w-7xl mx-auto lg:px-6">
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Workflow?"
+        description="Are you sure you want to delete this workflow? This will only delete the workflow definition and will not affect the underlying tasks."
+      />
       <div className="flex justify-between items-center">
         <SectionHeading
           title="Workflows"

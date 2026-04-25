@@ -35,12 +35,16 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
+import { ConfirmDeleteDialog } from '@/components/Dialogs/ConfirmDeleteDialog';
+
 export default function ProjectsPage() {
   const dispatch = useDispatch();
   const { projects } = useSelector((state: any) => state.workflow);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [envDialogOpen, setEnvDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<any>(null);
   const [loadingEnv, setLoadingEnv] = useState(false);
   const [selectedEnvironments, setSelectedEnvironments] = useState<any[]>([]);
   const [currentProject, setCurrentProject] = useState<any>(null);
@@ -101,11 +105,16 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleDelete = async (row: any) => {
-    if (!window.confirm('Are you sure you want to delete this project and all its environments?')) return;
+  const handleDeleteClick = (row: any) => {
+    setProjectToDelete(row);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!projectToDelete) return;
 
     const payload = {
-      project_id: row.id,
+      project_id: projectToDelete.id,
     };
 
     try {
@@ -122,6 +131,9 @@ export default function ProjectsPage() {
     } catch (e) {
       console.error('Delete error:', e);
       toast.error('Failed to delete project');
+    } finally {
+      setDeleteDialogOpen(false);
+      setProjectToDelete(null);
     }
   };
 
@@ -187,7 +199,7 @@ export default function ProjectsPage() {
               <TooltipTrigger asChild>
                 <div
                   className="cursor-pointer p-2 hover:bg-red-50 rounded-full transition-colors"
-                  onClick={() => handleDelete(row.original)}
+                  onClick={() => handleDeleteClick(row.original)}
                 >
                   <Trash2 size={18} className="text-red-600" />
                 </div>
@@ -222,6 +234,14 @@ export default function ProjectsPage() {
         searchBy="name"
         data={projects}
         columns={columns}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Project?"
+        description="Are you sure you want to delete this project and all its associated environments, tasks, and workflows? This action cannot be undone."
       />
 
       {/* New Project Dialog */}

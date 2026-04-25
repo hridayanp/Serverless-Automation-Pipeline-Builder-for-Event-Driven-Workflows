@@ -28,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ConfirmDeleteDialog } from '@/components/Dialogs/ConfirmDeleteDialog';
 
 export default function Tasks() {
   const navigate = useNavigate();
@@ -42,6 +43,8 @@ export default function Tasks() {
   >(projects?.[0]?.id ? String(projects[0].id) : undefined);
 
   const [viewTask, setViewTask] = useState<any | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDeleteId, setTaskToDeleteId] = useState<string | null>(null);
 
   const formatLabel = (key: string) => {
     return key
@@ -114,12 +117,17 @@ export default function Tasks() {
     navigate('/workflow/tasks/create', { state: { task } });
   };
 
-  const handleDelete = async (taskId: string) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
+  const handleDeleteClick = (taskId: string) => {
+    setTaskToDeleteId(taskId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!taskToDeleteId) return;
 
     try {
       setLoading(true);
-      const res = await deleteTask({ taskId });
+      const res = await deleteTask({ taskId: taskToDeleteId });
       if (res?.data?.status === 'SUCCESS') {
         toast.success('Task deleted successfully');
         if (selectedProjectId) fetchTasksByProject(selectedProjectId);
@@ -133,6 +141,8 @@ export default function Tasks() {
       toast.error(errorMsg);
     } finally {
       setLoading(false);
+      setDeleteDialogOpen(false);
+      setTaskToDeleteId(null);
     }
   };
 
@@ -185,7 +195,7 @@ export default function Tasks() {
               <Trash2
                 size={18}
                 className="cursor-pointer text-red-600 hover:text-red-800"
-                onClick={() => handleDelete(task.id)}
+                onClick={() => handleDeleteClick(task.id)}
               />
             </div>
           );
@@ -197,6 +207,13 @@ export default function Tasks() {
 
   return (
     <div className="grid gap-6 px-4 sm:px-6 lg:px-8 py-4 max-w-screen-2xl mx-auto">
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Task?"
+        description="Are you sure you want to delete this task? This action cannot be undone and may affect workflows using this task."
+      />
       <div className="flex justify-between items-center flex-wrap gap-4">
         <SectionHeading
           title="Tasks Management"
