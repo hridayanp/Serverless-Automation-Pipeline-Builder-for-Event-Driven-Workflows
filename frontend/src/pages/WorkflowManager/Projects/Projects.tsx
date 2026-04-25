@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProjects } from '@/redux/slices/workflowSlice';
 
@@ -244,8 +244,12 @@ export default function ProjectsPage() {
     ];
   }, [projects]);
 
-  const fetchProjects = async () => {
-    setIsLoading(true);
+  const hasFetched = useRef(false);
+
+  const fetchProjects = useCallback(async () => {
+    // Only set loading if it's the first fetch to avoid flickering on re-renders
+    if (!hasFetched.current) setIsLoading(true);
+    
     try {
       const response = await getProjects();
       if (response && response.data) {
@@ -259,19 +263,22 @@ export default function ProjectsPage() {
       dispatch(setProjects([]));
     } finally {
       setIsLoading(false);
+      hasFetched.current = true;
     }
-  };
+  }, [dispatch]);
 
   useEffect(() => {
-    fetchProjects();
-  }, [dispatch]);
+    if (!hasFetched.current) {
+      fetchProjects();
+    }
+  }, [fetchProjects]);
 
   if (isLoading) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6 animate-in fade-in duration-500">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-primary/10 rounded-xl" />
-          <div className="w-16 h-16 border-4 border-t-primary rounded-xl animate-spin absolute top-0 left-0" />
+          <div className="w-16 h-16 border-4 border-primary/10 rounded-full" />
+          <div className="w-16 h-16 border-4 border-t-primary rounded-full animate-spin absolute top-0 left-0" />
           <div className="absolute inset-0 flex items-center justify-center">
              <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
           </div>
