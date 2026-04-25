@@ -181,22 +181,28 @@ export default function Tasks() {
         cell: ({ row }) => {
           const task = row.original;
           return (
-            <div className="flex gap-3 items-center">
-              <Eye
-                size={18}
-                className="cursor-pointer text-gray-600 hover:text-black"
+            <div className="flex gap-2 items-center">
+              <div
+                className="cursor-pointer p-2 hover:bg-primary hover:text-white rounded-full transition-all text-gray-600"
                 onClick={() => setViewTask(task)}
-              />
-              <Pencil
-                size={18}
-                className="cursor-pointer text-primary hover:text-primary/80"
+                title="View Task"
+              >
+                <Eye size={18} />
+              </div>
+              <div
+                className="cursor-pointer p-2 hover:bg-primary hover:text-white rounded-full transition-all text-primary"
                 onClick={() => handleEdit(task)}
-              />
-              <Trash2
-                size={18}
-                className="cursor-pointer text-red-600 hover:text-red-800"
+                title="Edit Task"
+              >
+                <Pencil size={18} />
+              </div>
+              <div
+                className="cursor-pointer p-2 hover:bg-red-600 hover:text-white rounded-full transition-all text-red-600"
                 onClick={() => handleDeleteClick(task.id)}
-              />
+                title="Delete Task"
+              >
+                <Trash2 size={18} />
+              </div>
             </div>
           );
         },

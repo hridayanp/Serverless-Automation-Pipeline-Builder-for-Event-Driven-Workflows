@@ -16,30 +16,44 @@ const CustomToast = () => {
     <Toaster
       position="bottom-center"
       reverseOrder={false}
-      gutter={0}
+      gutter={12}
       toastOptions={{
-        // Define default options
-        className: 'toaster',
-        duration: 2000,
-        // Default options for specific types
-        icon: '',
+        duration: 4000,
         style: {
-          padding: '10px',
-          textAlign: 'center',
+          background: 'rgba(255, 255, 255, 0.95)',
+          color: '#1a2c20',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(0, 0, 0, 0.05)',
+          padding: '16px 24px',
+          borderRadius: '12px',
+          fontSize: '14px',
+          fontWeight: '500',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          maxWidth: '400px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
         },
-
         success: {
           style: {
-            background: '#377E62',
-            color: '#fff',
-            fontSize: '14px',
+            background: '#2d4b37',
+            color: '#ffffff',
+            border: '2px solid #ffffff',
+          },
+          iconTheme: {
+            primary: '#ffffff',
+            secondary: '#2d4b37',
           },
         },
         error: {
           style: {
-            background: '#C73C23',
-            color: '#fff',
-            fontSize: '14px',
+            background: '#c84b31',
+            color: '#ffffff',
+            border: '2px solid #ffffff',
+          },
+          iconTheme: {
+            primary: '#ffffff',
+            secondary: '#c84b31',
           },
         },
       }}

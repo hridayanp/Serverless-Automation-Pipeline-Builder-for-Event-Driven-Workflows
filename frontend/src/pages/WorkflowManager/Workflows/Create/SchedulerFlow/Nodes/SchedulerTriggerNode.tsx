@@ -112,7 +112,7 @@ export default function SchedulerTriggerNode({
       {/* ➕ Add Task Button */}
       <button
         onClick={handleAddTask}
-        className="absolute top-1/2 right-[-25px] -translate-y-1/2 bg-muted rounded-full p-2 border shadow hover:bg-primary hover:text-white transition"
+        className="absolute top-1/2 right-[-25px] -translate-y-1/2 bg-muted rounded-full p-2 border shadow hover:bg-primary hover:text-white hover:text-white transition"
       >
         <Plus size={18} />
       </button>

@@ -338,7 +338,7 @@ export default function Workflow() {
         <div className="flex gap-4 items-center justify-center mr-2">
           <button
             onClick={() => handleExecute(row.original)}
-            className="text-primary hover:text-primary/80 cursor-pointer font-medium text-xs border border-primary px-2 py-1 rounded"
+            className="text-primary hover:bg-primary hover:text-white cursor-pointer font-medium text-xs border border-primary px-2 py-1 rounded transition-colors"
             title="Run Workflow"
           >
             Run
