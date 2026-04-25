@@ -259,44 +259,56 @@ export default function ProjectsPage() {
 
       {/* View Environments Dialog */}
       <Dialog open={envDialogOpen} onOpenChange={setEnvDialogOpen}>
-        <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh] p-0 border-none shadow-2xl">
-          <div className="bg-slate-900 text-white p-6 rounded-t-lg">
+        <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh] p-0 border-none shadow-2xl bg-background [&>button]:text-white">
+          <div className="bg-primary text-white p-6 rounded-t-lg">
             <DialogHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg">
-                  <Terminal className="w-6 h-6 text-primary/70" />
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <Terminal className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <DialogTitle className="text-2xl font-bold tracking-tight text-white">
                     Environment Details
                   </DialogTitle>
-                  <p className="text-slate-400 text-sm mt-1">
-                    Project: <span className="text-primary/70 font-medium">{currentProject?.name}</span>
+                  <p className="text-white/70 text-sm mt-1">
+                    Project:{' '}
+                    <span className="text-white font-bold">{currentProject?.name}</span>
                   </p>
                 </div>
               </div>
             </DialogHeader>
           </div>
 
-          <div className="p-6 bg-slate-50">
+          <div className="p-6 bg-background">
             {loadingEnv ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                <p className="text-slate-500 font-medium">Fetching environments...</p>
+                <div className="w-12 h-12 border-4 border-t-transparent border-primary rounded-full animate-spin" />
+                <p className="text-primary font-medium">Fetching environments...</p>
               </div>
             ) : selectedEnvironments.length > 0 ? (
               <div className="space-y-6">
                 {selectedEnvironments.map((env) => (
-                  <div key={env.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
-                      <div className="flex items-center gap-2">
-                        <Settings2 className="w-5 h-5 text-slate-400" />
-                        <h3 className="font-bold text-slate-800 text-lg capitalize">{env.env_name}</h3>
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-100">
+                  <div
+                    key={env.id}
+                    className="bg-white rounded-xl shadow-md border border-border overflow-hidden hover:shadow-lg transition-shadow"
+                  >
+                    <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-white">
+                      <div className="flex items-center gap-3">
+                        <Settings2 className="w-5 h-5 text-secondary" />
+                        <h3 className="font-bold text-primary text-lg capitalize">
+                          {env.env_name}
+                        </h3>
+                        <Badge
+                          variant="secondary"
+                          className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+                        >
                           {env.language}
                         </Badge>
                       </div>
-                      <Badge variant="outline" className="font-mono text-xs text-slate-500">
+                      <Badge
+                        variant="outline"
+                        className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors cursor-default"
+                      >
                         ID: {env.id.slice(0, 8)}...
                       </Badge>
                     </div>
@@ -305,43 +317,52 @@ export default function ProjectsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-50 rounded-lg">
-                              <Code2 className="w-4 h-4 text-indigo-600" />
+                            <div className="p-2 bg-primary/5 rounded-lg border border-primary/10">
+                              <Code2 className="w-4 h-4 text-primary" />
                             </div>
                             <div>
-                              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Method</p>
-                              <p className="text-slate-700 font-medium">{env.method}</p>
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                Method
+                              </p>
+                              <p className="text-primary font-semibold">{env.method}</p>
                             </div>
                           </div>
                         </div>
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-50 rounded-lg">
-                              <FileCode2 className="w-4 h-4 text-emerald-600" />
+                            <div className="p-2 bg-secondary/5 rounded-lg border border-secondary/10">
+                              <FileCode2 className="w-4 h-4 text-secondary" />
                             </div>
                             <div>
-                              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Config File</p>
-                              <p className="text-slate-700 font-medium">{env.file_name}</p>
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                Config File
+                              </p>
+                              <p className="text-primary font-semibold">{env.file_name}</p>
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <Separator className="my-6 bg-slate-100" />
+                      <Separator className="my-6" />
 
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            Requirements
-                            <span className="text-xs font-normal text-slate-400">({env.file_name})</span>
+                          <p className="text-sm font-bold text-primary flex items-center gap-2 uppercase tracking-wide">
+                            <Terminal className="w-4 h-4" />
+                            Requirements Contents
+                            <span className="text-[10px] font-normal text-muted-foreground normal-case">
+                              ({env.file_name})
+                            </span>
                           </p>
                         </div>
                         <div className="relative group">
-                          <pre className="bg-slate-900 text-slate-300 p-4 rounded-lg text-sm font-mono leading-relaxed overflow-x-auto max-h-[300px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800">
+                          <pre className="bg-[#1a2c20] text-[#e8f3ec] p-5 rounded-xl text-sm font-mono leading-relaxed overflow-x-auto max-h-[350px] border border-white/5 thin-scrollbar shadow-inner">
                             {decodeBase64(env.file_content)}
                           </pre>
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Badge className="bg-slate-800 text-slate-400 border-slate-700">Read Only</Badge>
+                          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Badge className="bg-primary/80 text-white border-white/20 backdrop-blur-sm">
+                              Read Only
+                            </Badge>
                           </div>
                         </div>
                       </div>
@@ -350,8 +371,12 @@ export default function ProjectsPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300">
-                <p className="text-slate-400">No environments found for this project.</p>
+              <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-border shadow-inner">
+                <FileCode2 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-primary">No Environments Found</h3>
+                <p className="text-muted-foreground mt-1 max-w-xs mx-auto">
+                  This project has no execution environments configured yet.
+                </p>
               </div>
             )}
           </div>
