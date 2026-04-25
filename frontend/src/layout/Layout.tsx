@@ -5,7 +5,6 @@ import bgImage from '@/assets/images/common/bg-2.svg';
 import misteoLogo from '@/assets/images/common/misteo-large.png';
 
 import { Card } from '@/components/ui/card';
-// import { Button } from '@/components/ui/button';
 import {
   SidebarProvider,
   Sidebar,
@@ -15,6 +14,11 @@ import {
 
 import { AppSidebar } from './app-sidebar';
 import { Button } from '@/components/ui/button';
+import { PanelLeft } from 'lucide-react';
+
+/* ── palette tokens (shared across sidebar / header / dashboard) ────────── */
+// const BRAND = '#1a2c20';
+const LIGHT = '#f7f8f5';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -76,20 +80,50 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-screen overflow-hidden">
+      <div className="flex h-screen w-screen overflow-hidden" style={{ backgroundColor: LIGHT }}>
         {/* Sidebar */}
-        <Sidebar className="border-r">
-          <div className="h-16 px-6 flex items-center border-b">
+        <Sidebar className="border-r" style={{ borderColor: '#e8ede9' }}>
+          <div className="h-16 px-6 flex items-center border-b" style={{ borderColor: '#e8ede9' }}>
             <img src={misteoLogo} alt="Logo" className="h-6" />
           </div>
           <AppSidebar />
         </Sidebar>
 
         {/* Sidebar Inset (Layout Shell) */}
-        <SidebarInset>
-          {/* Sticky Header */}
-          <header className="bg-background sticky top-0 z-10 flex h-16 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
+        <SidebarInset style={{ backgroundColor: LIGHT }}>
+
+          {/* ── Header — matches sidebar design language ─────────────── */}
+          <header
+            className="sticky top-0 z-10 flex h-16 items-center justify-between px-5 shrink-0"
+            style={{
+              backgroundColor: '#ffffff',
+              borderBottom: '1px solid #e8ede9',
+            }}
+          >
+            {/* left: trigger + divider + logo */}
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="-ml-1 flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150 text-muted-foreground hover:bg-[#d4edda] hover:text-[#1a2c20]">
+  <PanelLeft className="w-4 h-4.5" strokeWidth={2.2} />
+</SidebarTrigger>
+
+              <div className="h-4 w-px" style={{ backgroundColor: '#e8ede9' }} />
+
+              
+            </div>
+
+            {/* right: live status pill — mirrors dashboard + sidebar bottom pill */}
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
+              style={{ backgroundColor: '#f0faf3', borderColor: '#c8e6c9' }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span
+                className="text-[10px] font-black uppercase tracking-[0.2em]"
+                style={{ color: '#2d5a3d' }}
+              >
+                Live
+              </span>
+            </div>
           </header>
 
           {/* Scrollable Page Content */}
