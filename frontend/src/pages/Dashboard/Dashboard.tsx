@@ -6,19 +6,20 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 
-
 import {
   LayoutGrid,
   Activity,
   ShieldCheck,
   Zap,
+  ArrowUpRight,
+  TrendingUp,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  getProjects, 
-  getTasks, 
+import {
+  getProjects,
+  getTasks,
   getWorkflowsForProject,
-  getWorkflowJobs 
+  getWorkflowJobs,
 } from '@/api/ApiService';
 import { setProjects } from '@/redux/slices/workflowSlice';
 
@@ -48,7 +49,7 @@ export default function Dashboard() {
         navigate('/workflow/details');
         break;
       case 'Live Executions':
-        navigate('/workflow/details'); // Or specialized logs page
+        navigate('/workflow/details');
         break;
       default:
         break;
@@ -62,9 +63,13 @@ export default function Dashboard() {
     try {
       const res = await getTasks({ project_id: projectId });
       const apiData = res?.data;
-      const data = apiData?.status === 'SUCCESS' ? apiData.data : (Array.isArray(apiData) ? apiData : []);
-      const finalData = Array.isArray(data) ? data : [];
-      setTasksData(finalData);
+      const data =
+        apiData?.status === 'SUCCESS'
+          ? apiData.data
+          : Array.isArray(apiData)
+          ? apiData
+          : [];
+      setTasksData(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error('Failed to fetch tasks:', e);
       setTasksData([]);
@@ -78,9 +83,13 @@ export default function Dashboard() {
     try {
       const res = await getWorkflowsForProject({ project_id: projectId });
       const apiData = res?.data;
-      const data = apiData?.status === 'SUCCESS' ? apiData.data : (Array.isArray(apiData) ? apiData : []);
-      const finalData = Array.isArray(data) ? data : [];
-      setWorkflowsData(finalData);
+      const data =
+        apiData?.status === 'SUCCESS'
+          ? apiData.data
+          : Array.isArray(apiData)
+          ? apiData
+          : [];
+      setWorkflowsData(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error('Failed to fetch workflows:', e);
       setWorkflowsData([]);
@@ -94,7 +103,12 @@ export default function Dashboard() {
     try {
       const res = await getWorkflowJobs({ project_id: projectId });
       const apiData = res?.data;
-      const data = apiData?.status === 'SUCCESS' ? apiData.data : (Array.isArray(apiData) ? apiData : []);
+      const data =
+        apiData?.status === 'SUCCESS'
+          ? apiData.data
+          : Array.isArray(apiData)
+          ? apiData
+          : [];
       setJobsData(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error('Failed to fetch jobs:', e);
@@ -108,14 +122,12 @@ export default function Dashboard() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-
       let projectList = projects;
 
-      /* Fetch projects if redux empty */
       if (!projectList || projectList.length === 0) {
         const res = await getProjects();
         const apiData = res?.data;
-        
+
         if (apiData?.status === 'SUCCESS' && Array.isArray(apiData?.data)) {
           dispatch(setProjects(apiData.data));
           projectList = apiData.data;
@@ -160,29 +172,45 @@ export default function Dashboard() {
       label: 'Total Projects',
       value: projects?.length || 0,
       icon: LayoutGrid,
-      color: 'primary',
-      description: 'Collections organizing your cloud goals.'
+      color: '#1a2c20',
+      accentColor: '#d4edda',
+      description:
+        'Isolated namespaces grouping your cloud resources, tasks, and automation goals into deployable units.',
+      trend: 'All systems nominal',
+      route: '/workflow/projects',
     },
     {
       label: 'Total Tasks',
       value: tasksData?.length || 0,
       icon: Activity,
-      color: 'secondary',
-      description: 'Individual units of cloud automation.'
+      color: '#2d5a3d',
+      accentColor: '#c8e6c9',
+      description:
+        'Discrete serverless functions registered under your project — each one a deployable unit of business logic.',
+      trend: 'Ready for dispatch',
+      route: '/workflow/tasks',
     },
     {
       label: 'Total Workflows',
       value: workflowsData?.length || 0,
       icon: ShieldCheck,
-      color: 'tertiary',
-      description: 'Automated chains of execution.'
+      color: '#1b4332',
+      accentColor: '#b7dfc8',
+      description:
+        'Orchestrated execution chains linking tasks together — your automation logic running end-to-end on schedule or trigger.',
+      trend: 'Pipelines intact',
+      route: '/workflow/details',
     },
     {
       label: 'Live Executions',
       value: jobsData?.length || 0,
       icon: Zap,
-      color: 'primary',
-      description: 'Active automation runs in progress.'
+      color: '#0d3320',
+      accentColor: '#a8d5b5',
+      description:
+        'Jobs currently running or queued in real time — each representing an active invocation of your workflow engine.',
+      trend: 'Monitoring active',
+      route: '/workflow/details',
     },
   ];
 
@@ -193,66 +221,151 @@ export default function Dashboard() {
           <div className="w-16 h-16 border-4 border-primary/10 rounded-full" />
           <div className="w-16 h-16 border-4 border-t-primary rounded-full animate-spin absolute top-0 left-0" />
           <div className="absolute inset-0 flex items-center justify-center">
-             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
           </div>
         </div>
         <div className="flex flex-col items-center gap-1 text-center">
-          <p className="text-xl font-bold text-primary tracking-tight">Syncing Dashboard</p>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Accessing Secure Infrastructure</p>
+          <p className="text-xl font-bold text-primary tracking-tight">
+            Syncing Dashboard
+          </p>
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
+            Accessing Secure Infrastructure
+          </p>
         </div>
       </div>
     );
   }
 
+  const now = new Date();
+  const timeString = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+  const dateString = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
   return (
-    <div className="h-[calc(100vh-64px)] overflow-hidden bg-[#fdfdfb] p-6 lg:p-8 space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500 flex flex-col">
-      {/* Header section */}
-      <div className="flex-none space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-[#1a2c20]">
-          System Monitoring
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Real-time overview of your serverless orchestration ecosystem.
+    <div className="min-h-screen bg-[#f7f8f5] p-6 lg:p-10 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+
+      {/* ── Header ── */}
+      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#1a2c20]/40 mb-2">
+            Orchestration Console
+          </p>
+          <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-[#1a2c20] leading-none">
+            System Overview
+          </h1>
+          <p className="mt-3 text-sm text-[#1a2c20]/50 font-medium max-w-md leading-relaxed">
+            Your serverless infrastructure at a glance — projects, tasks,
+            workflows, and live execution state, all in one place.
+          </p>
+        </div>
+
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+              Live
+            </span>
+          </div>
+          <p className="text-lg font-bold text-[#1a2c20] tabular-nums">{timeString}</p>
+          <p className="text-[11px] text-[#1a2c20]/40 font-medium">{dateString}</p>
+        </div>
+      </div>
+
+      {/* ── Divider ── */}
+      <div className="flex items-center gap-4 mb-8">
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#1a2c20]/30 whitespace-nowrap">
+          Key Metrics
         </p>
+        <div className="flex-1 h-px bg-[#1a2c20]/8" />
+        <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#1a2c20]/30 uppercase tracking-widest">
+          <TrendingUp className="w-3 h-3" />
+          <span>4 Signals</span>
+        </div>
       </div>
 
-      <div className="flex-1 space-y-6 overflow-hidden flex flex-col">
-        <div className="flex-none flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-[#1a2c20]/40">Key Metrics</h2>
-        </div>
+      {/* ── Stat Cards Grid ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
+        {stats.map((stat, i) => (
+          <div
+            key={i}
+            onClick={() => handleCardClick(stat.label)}
+            className="group relative bg-white rounded-2xl border border-neutral-100 p-7 cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-[#1a2c20]/8 hover:-translate-y-0.5 hover:border-[#1a2c20]/15"
+          >
+            {/* Background accent blob */}
+            <div
+              className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-[0.06] group-hover:opacity-[0.10] transition-opacity duration-500 pointer-events-none"
+              style={{ backgroundColor: stat.color }}
+            />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full pb-8">
-          {stats.map((stat, i) => (
-            <div 
-              key={i} 
-              onClick={() => handleCardClick(stat.label)}
-              className="bg-white p-7 rounded-xl border border-neutral-100 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group cursor-pointer flex flex-col gap-6"
-            >
-              <div className="flex justify-between items-start">
-                <div className={`p-3 rounded-xl bg-${stat.color}/5 text-${stat.color} group-hover:scale-110 transition-transform duration-500`}>
-                  <stat.icon className="w-6 h-6" />
-                </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Live</span>
-                </div>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-bold text-[#1a2c20] tracking-tight">{stat.value}</p>
-                  <span className="text-xs font-medium text-emerald-600">+0%</span>
-                </div>
+            {/* Top row: icon + arrow */}
+            <div className="flex items-start justify-between mb-6">
+              <div
+                className="flex items-center justify-center w-11 h-11 rounded-xl transition-transform duration-300 group-hover:scale-110"
+                style={{ backgroundColor: stat.accentColor }}
+              >
+                <stat.icon
+                  className="w-5 h-5"
+                  style={{ color: stat.color }}
+                  strokeWidth={2.2}
+                />
               </div>
 
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {stat.description}
-              </p>
+              <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
+                <span className="text-[10px] font-bold text-[#1a2c20]/40 uppercase tracking-wider">
+                  Explore
+                </span>
+                <ArrowUpRight
+                  className="w-4 h-4 text-[#1a2c20]/40"
+                  strokeWidth={2.5}
+                />
+              </div>
             </div>
-          ))}
-        </div>
+
+            {/* Label */}
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#1a2c20]/40 mb-2">
+              {stat.label}
+            </p>
+
+            {/* Value */}
+            <div className="flex items-baseline gap-3 mb-4">
+              <span
+                className="text-6xl font-black tracking-tighter leading-none tabular-nums"
+                style={{ color: stat.color }}
+              >
+                {stat.value}
+              </span>
+              <div className="flex items-center gap-1 pb-1">
+                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
+                  {stat.trend}
+                </span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <p className="text-sm text-[#1a2c20]/50 leading-relaxed font-medium">
+              {stat.description}
+            </p>
+
+            {/* Bottom bar */}
+            <div
+              className="absolute bottom-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 rounded-b-2xl"
+              style={{ backgroundColor: stat.color, opacity: 0.3 }}
+            />
+          </div>
+        ))}
       </div>
+
+      {/* ── Footer note ── */}
+      <p className="mt-8 text-center text-[10px] text-[#1a2c20]/25 font-medium uppercase tracking-widest">
+        Data reflects the first active project · Click any card to drill down
+      </p>
     </div>
   );
 }
