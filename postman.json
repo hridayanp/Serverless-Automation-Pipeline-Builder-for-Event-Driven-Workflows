@@ -1,0 +1,472 @@
+{
+	"info": {
+		"_postman_id": "4b5c8bbf-a24f-4a43-8cff-fc03ecb4d514",
+		"name": "ProjectsService",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Create Project",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"My Automation Project\",\n  \"description\": \"A project to handle data processing pipelines\",\n  \"script_folder\": \"automation_scripts\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/project",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"project"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Projects",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/project",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"project"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Project",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/project/{{projectId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"project",
+								"{{projectId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Environments",
+			"item": [
+				{
+					"name": "Create Environment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"project_id\": \"{{projectId}}\",\n  \"env_name\": \"Development\",\n  \"language\": \"python\",\n  \"method\": \"conda\",\n  \"file_name\": \"environment.yml\",\n  \"file_content\": \"bmFtZTogZGV2CmNoYW5uZWxzOgogIC0gZGVmYXVsdHMKZGVwZW5kZW5jaWVzOgogIC0gcHl0aG9uPTMuOQ==\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/project/environment",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"project",
+								"environment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Environments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/project/environment/{{projectId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"project",
+								"environment",
+								"{{projectId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Data Cleanup Task\",\n  \"description\": \"Removes temporary files and logs\",\n  \"project_id\": \"{{projectId}}\",\n  \"environment_id\": \"{{envId}}\",\n  \"file_data\": {\n    \"file_name\": \"cleanup.py\",\n    \"file_content\": \"cHJpbnQoIkNsZWFudXAgc3RhcnRlZCIpCmV4aXQoMCk=\"\n  },\n  \"requirements\": {\n    \"file_name\": \"requirements.txt\",\n    \"file_content\": \"Ym90bzM9PTEuMjYuMA==\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/tasks?project_id={{projectId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "project_id",
+									"value": "{{projectId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Task Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/tasks/{{taskId}}/logs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks",
+								"{{taskId}}",
+								"logs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Task Files",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/tasks/{{taskId}}/files",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"tasks",
+								"{{taskId}}",
+								"files"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Workflows",
+			"item": [
+				{
+					"name": "Create Workflow",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"workflow_name\": \"End-to-End Pipeline\",\n  \"project_id\": \"{{projectId}}\",\n  \"environment_id\": \"{{envId}}\",\n  \"scheduler_detail\": {\n    \"cron\": \"0 12 * * *\",\n    \"detail\": \"Every day at noon\"\n  },\n  \"tasks\": {\n    \"task_id\": \"{{taskId1}}\",\n    \"children\": {\n      \"on_success\": {\n        \"task_id\": \"{{taskId2}}\"\n      },\n      \"on_failure\": null\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/workflows",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"workflows"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Workflows",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/workflows?project_id={{projectId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"workflows"
+							],
+							"query": [
+								{
+									"key": "project_id",
+									"value": "{{projectId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute Workflow",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/workflows/{{workflow_id}}/execute",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"execute"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Workflow Logs",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"workflow_id\": \"{{workflow_id}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/workflows/logs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"workflows",
+								"logs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Workflow",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/workflows/{{workflow_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://nvce0p0qwa.execute-api.ap-south-1.amazonaws.com",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_COGNITO_TOKEN_HERE",
+			"type": "string"
+		},
+		{
+			"key": "projectId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "envId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "taskId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "workflow_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
