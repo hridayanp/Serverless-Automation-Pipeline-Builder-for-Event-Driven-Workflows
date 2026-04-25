@@ -199,6 +199,18 @@ export const getTaskFiles = (data: any) => {
     headers,
   );
 };
+export const deleteTask = (data: any) => {
+  const accessToken = localStorage.getItem('access_token');
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    Accept: 'application/json',
+  };
+
+  return ApiHelper.deleteWithHeaders(
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/tasks/${data.taskId}`,
+    headers,
+  );
+};
 
 /**
  * WORKFLOW

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { getProjects, getTasks } from '@/api/ApiService';
+import { getProjects, getTasks, deleteTask } from '@/api/ApiService';
 import { Label } from '@/components/ui/label';
 import { setProjects } from '@/redux/slices/workflowSlice';
 import { Eye } from 'lucide-react';
@@ -61,12 +61,12 @@ export default function Tasks() {
     try {
       setLoading(true);
       const res = await getProjects();
-      const fetched = res?.data?.data;
+      const apiData = res?.data;
 
-      if (res?.data?.success && Array.isArray(fetched) && fetched.length > 0) {
-        dispatch(setProjects(fetched));
+      if (apiData?.status === 'SUCCESS' && Array.isArray(apiData?.data)) {
+        dispatch(setProjects(apiData.data));
       } else {
-        toast.error(res?.data?.message || 'No projects found');
+        toast.error(apiData?.message || 'No projects found');
         dispatch(setProjects([]));
       }
     } catch (err) {
@@ -87,13 +87,13 @@ export default function Tasks() {
     try {
       setLoading(true);
       const res = await getTasks({ project_id: projectId });
-      const fetchedTasks = res?.data?.data;
+      const apiData = res?.data;
 
-      if (res?.data?.success && Array.isArray(fetchedTasks)) {
-        setTasksData(fetchedTasks);
+      if (apiData?.status === 'SUCCESS' && Array.isArray(apiData?.data)) {
+        setTasksData(apiData.data);
       } else {
         setTasksData([]);
-        toast.error(res?.data?.message || 'No tasks found');
+        toast.error(apiData?.message || 'No tasks found');
       }
     } catch (e) {
       console.error('Failed to fetch tasks:', e);
@@ -114,8 +114,26 @@ export default function Tasks() {
     navigate('/workflow/tasks/create', { state: { task } });
   };
 
-  const handleDelete = () => {
-    toast('Delete logic to be implemented');
+  const handleDelete = async (taskId: string) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+
+    try {
+      setLoading(true);
+      const res = await deleteTask({ taskId });
+      if (res?.data?.status === 'SUCCESS') {
+        toast.success('Task deleted successfully');
+        if (selectedProjectId) fetchTasksByProject(selectedProjectId);
+      } else {
+        toast.error(res?.data?.message || 'Failed to delete task');
+      }
+    } catch (e: any) {
+      console.error('Delete Error:', e);
+      const errorMsg =
+        e?.response?.data?.message || e?.message || 'Error deleting task';
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddTask = () => {
@@ -167,7 +185,7 @@ export default function Tasks() {
               <Trash2
                 size={18}
                 className="cursor-pointer text-red-600 hover:text-red-800"
-                onClick={() => handleDelete()}
+                onClick={() => handleDelete(task.id)}
               />
             </div>
           );
