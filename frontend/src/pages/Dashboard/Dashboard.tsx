@@ -205,9 +205,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fdfdfb] p-6 lg:p-8 space-y-10 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+    <div className="h-[calc(100vh-64px)] overflow-hidden bg-[#fdfdfb] p-6 lg:p-8 space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500 flex flex-col">
       {/* Header section */}
-      <div className="space-y-1">
+      <div className="flex-none space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-[#1a2c20]">
           System Monitoring
         </h1>
@@ -216,12 +216,12 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="flex-1 space-y-6 overflow-hidden flex flex-col">
+        <div className="flex-none flex items-center justify-between">
           <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-[#1a2c20]/40">Key Metrics</h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full pb-8">
           {stats.map((stat, i) => (
             <div 
               key={i} 
