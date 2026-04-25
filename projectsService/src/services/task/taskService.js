@@ -10,7 +10,9 @@ import {
   getItem,
   scanTable,
   updateItem,
+  deleteItem,
 } from '../aws/dynamoService.js';
+import * as workflowService from '../workflow/workflowService.js';
 
 import { putFile, getFile } from '../aws/s3Service.js';
 
@@ -309,4 +311,19 @@ export const getTaskLogs = async (taskId) => {
     log_file_name: task.log_file_name,
     log_file_base64: fileObj.base64,
   };
+};
+/* ============================================================
+   DELETE TASK (With Dependency Check)
+   ============================================================ */
+export const deleteTask = async (taskId) => {
+  const task = await getItem(TABLE, { id: taskId });
+  if (!task) throw new Error('Task not found');
+
+  const isInWorkflow = await workflowService.isTaskInWorkflows(taskId);
+  if (isInWorkflow) {
+    throw new Error('Task is already used in a workflow and cannot be deleted');
+  }
+
+  await deleteItem(TABLE, { id: taskId });
+  return { id: taskId, message: 'Task deleted successfully' };
 };

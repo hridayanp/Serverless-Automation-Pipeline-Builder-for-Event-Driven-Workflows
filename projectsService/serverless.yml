@@ -118,6 +118,14 @@ functions:
           method: get
           authorizer: cognitoAuth
 
+  deleteTask:
+    handler: handler.deleteTask
+    events:
+      - httpApi:
+          path: /tasks/{taskId}
+          method: delete
+          authorizer: cognitoAuth
+
   # --------------------------------------------------------
   # Projects
   # --------------------------------------------------------

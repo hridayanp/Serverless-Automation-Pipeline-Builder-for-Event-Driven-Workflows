@@ -44,6 +44,7 @@ export const createTask = withAuth(taskController.createTask);
 export const getTasks = withAuth(taskController.getTasks);
 export const getTaskLogFile = withAuth(taskController.getTaskLogFile);
 export const getTaskScriptFiles = withAuth(taskController.getTaskScriptFiles);
+export const deleteTask = withAuth(taskController.deleteTask);
 
 // ------------------------------------------------------------------
 // ✅ Workflow routes (NEW)

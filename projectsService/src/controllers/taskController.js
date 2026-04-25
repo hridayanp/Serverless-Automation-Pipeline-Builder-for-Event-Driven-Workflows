@@ -149,3 +149,33 @@ export const getTaskScriptFiles = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify(response) };
   }
 };
+/* ============================================================================
+   6. DELETE TASK
+   ========================================================================= */
+export const deleteTask = async (event) => {
+  const response = new CustomResponse();
+  try {
+    const { taskId } = event.pathParameters || {};
+    if (!taskId) {
+      response.status = 'FAILURE';
+      response.message = 'Missing taskId';
+      return { statusCode: 400, headers, body: JSON.stringify(response) };
+    }
+
+    const result = await taskService.deleteTask(taskId);
+
+    response.status = 'SUCCESS';
+    response.message = result.message;
+    response.data = { id: result.id };
+
+    return { statusCode: 200, headers, body: JSON.stringify(response) };
+  } catch (err) {
+    console.error('deleteTask Error:', err);
+    response.status = 'FAILURE';
+    response.message = err.message || 'Failed to delete task';
+
+    // If it's a validation error (used in workflow), return 400, otherwise 500
+    const statusCode = err.message?.includes('already used') ? 400 : 500;
+    return { statusCode, headers, body: JSON.stringify(response) };
+  }
+};

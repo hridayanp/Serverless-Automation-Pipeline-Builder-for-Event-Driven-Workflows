@@ -202,6 +202,33 @@ export const deleteWorkflowsByProject = async (projectId) => {
   const workflows = await scanTable(WORKFLOW_TABLE);
   const related = workflows.filter((w) => w.project_id === projectId);
   if (related.length > 0) {
-    await Promise.all(related.map((w) => deleteItem(WORKFLOW_TABLE, { id: w.id })));
+    await Promise.all(
+      related.map((w) => deleteItem(WORKFLOW_TABLE, { id: w.id })),
+    );
   }
+};
+
+/* --------------------------------------------------
+   CHECK IF TASK IS IN ANY WORKFLOW
+-------------------------------------------------- */
+export const isTaskInWorkflows = async (taskId) => {
+  const workflows = await scanTable(WORKFLOW_TABLE);
+
+  const searchTask = (node, targetId) => {
+    if (!node) return false;
+    if (node.task_id === targetId) return true;
+    if (!node.children) return false;
+
+    for (const key of Object.keys(node.children)) {
+      const child = node.children[key];
+      if (Array.isArray(child)) {
+        if (child.some((c) => searchTask(c, targetId))) return true;
+      } else if (typeof child === 'object') {
+        if (searchTask(child, targetId)) return true;
+      }
+    }
+    return false;
+  };
+
+  return workflows.some((w) => searchTask(w.tasks, taskId));
 };
