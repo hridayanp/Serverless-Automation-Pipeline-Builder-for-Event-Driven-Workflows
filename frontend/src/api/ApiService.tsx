@@ -122,7 +122,7 @@ export const createProjectEnvironments = (data: any) => {
   };
 
   return ApiHelper.postWithHeaders(
-    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}project/environment`,
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/project/environment`,
     headers,
     data,
   );
@@ -140,6 +140,7 @@ export const getProjectEnvironments = (data: any) => {
       data.projectId
     }`,
     headers,
+    data,
   );
 };
 
@@ -170,6 +171,32 @@ export const createTasks = (data: any) => {
     `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/tasks`,
     headers,
     data,
+  );
+};
+
+export const getTaskLogs = (data: any) => {
+  const accessToken = localStorage.getItem('access_token');
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    Accept: 'application/json',
+  };
+
+  return ApiHelper.getWithHeaders(
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/tasks/${data.taskId}/logs`,
+    headers,
+  );
+};
+
+export const getTaskFiles = (data: any) => {
+  const accessToken = localStorage.getItem('access_token');
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    Accept: 'application/json',
+  };
+
+  return ApiHelper.getWithHeaders(
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/tasks/${data.taskId}/files`,
+    headers,
   );
 };
 
@@ -205,6 +232,19 @@ export const getWorkflowsForProject = (data: any) => {
   );
 };
 
+export const executeWorkflow = (data: any) => {
+  const accessToken = localStorage.getItem('access_token');
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    Accept: 'application/json',
+  };
+
+  return ApiHelper.postWithOnlyHeaders(
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/workflows/${data.workflow_id}/execute`,
+    headers,
+  );
+};
+
 export const getWorkflowJobs = (data: any) => {
   const accessToken = localStorage.getItem('access_token');
   const headers = {
@@ -213,8 +253,21 @@ export const getWorkflowJobs = (data: any) => {
   };
 
   return ApiHelper.postWithHeaders(
-    `${import.meta.env.VITE_REACT_API_URL}/workflow/logs`,
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/workflows/logs`,
     headers,
     data,
+  );
+};
+
+export const deleteWorkflow = (data: any) => {
+  const accessToken = localStorage.getItem('access_token');
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    Accept: 'application/json',
+  };
+
+  return ApiHelper.deleteWithHeaders(
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/workflows/${data.workflow_id}`,
+    headers,
   );
 };

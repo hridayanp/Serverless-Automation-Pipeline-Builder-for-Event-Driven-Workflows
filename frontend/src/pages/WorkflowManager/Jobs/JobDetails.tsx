@@ -25,20 +25,21 @@ import {
 import { ListChecks, CheckCircle2, Flag, Timer } from 'lucide-react';
 
 const taskStatusColorMap: Record<string, string> = {
-  on_success: '#22c55e', // green-500
-  on_failure: '#ef4444', // red-500
-  on_completion: '#eab308', // yellow-500
+  COMPLETED: '#22c55e', // green-500
+  FAILED: '#ef4444',    // red-500
+  RUNNING: '#3b82f6',   // blue-500
+  PENDING: '#eab308',   // yellow-500
 };
 
 const taskStatusDescriptions: Record<string, string> = {
-  on_success: 'Executed successfully without errors.',
-  on_failure: 'Task failed during execution.',
-  on_completion: 'Triggered regardless of success or failure.',
+  COMPLETED: 'Task executed successfully.',
+  FAILED: 'Task failed during execution.',
+  RUNNING: 'Task is currently running.',
+  PENDING: 'Task is waiting to be executed.',
 };
 
 const workflowStatusClassMap: Record<string, string> = {
   COMPLETED: 'bg-green-100 text-green-700 border-green-200',
-  PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   EXECUTING: 'bg-blue-100 text-blue-800 border-blue-200',
   FAILED: 'bg-red-100 text-red-700 border-red-200',
 };
@@ -55,8 +56,8 @@ export default function JobDetailsPage() {
 
   const stats = useMemo(() => {
     const totalTasks = taskLogs.length;
-    const onCompletionCount = taskLogs.filter(
-      (t: any) => t.status === 'on_completion'
+    const completedCount = taskLogs.filter(
+      (t: any) => t.status === 'COMPLETED'
     ).length;
 
     const durationInSeconds =
@@ -72,16 +73,16 @@ export default function JobDetailsPage() {
       {
         label: 'Total Tasks',
         value: totalTasks,
-        footerTitle: 'Executed Tasks',
-        footerText: 'Total no. of tasks executed',
+        footerTitle: 'Tasks Found',
+        footerText: 'Tasks tracked in this run',
         icon: ListChecks,
         iconColor: 'text-indigo-500',
       },
       {
         label: 'Completed Tasks',
-        value: onCompletionCount,
-        footerTitle: 'Completion',
-        footerText: 'Tasks completed on exit',
+        value: completedCount,
+        footerTitle: 'Success Rate',
+        footerText: 'Tasks finished successfully',
         icon: CheckCircle2,
         iconColor: 'text-emerald-500',
       },
@@ -121,7 +122,7 @@ export default function JobDetailsPage() {
       cell: ({ row }: { row: any }) => {
         const value: string = row.getValue('status');
         const color = taskStatusColorMap[value] ?? '#d1d5db';
-        const label = value.replace('on_', '').replace('_', ' ');
+        const label = value.toLowerCase().replace('_', ' ');
         const description = taskStatusDescriptions[value] ?? 'Unknown status';
 
         return (
@@ -147,7 +148,7 @@ export default function JobDetailsPage() {
                         style={{ backgroundColor: hex }}
                       />
                       <span className="capitalize font-medium">
-                        {key.replace('on_', '').replace('_', ' ')}
+                        {key.toLowerCase().replace('_', ' ')}
                       </span>
                     </li>
                   ))}

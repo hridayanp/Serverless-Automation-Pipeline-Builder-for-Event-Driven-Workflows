@@ -75,7 +75,7 @@ export default function TaskForm({
 
       const apiData = res?.data;
 
-      if (apiData?.success && Array.isArray(apiData?.data)) {
+      if (apiData?.status === 'SUCCESS' && Array.isArray(apiData?.data)) {
         setEnvOptions(apiData.data);
         setShowEnvSelect(apiData.data.length > 0);
       } else {

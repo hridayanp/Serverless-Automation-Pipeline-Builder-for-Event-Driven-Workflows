@@ -30,7 +30,12 @@ import {
 
 import WorkflowViewer from './View/WorkflowViewer';
 import { clearConnectorWorkflows } from '@/redux/slices/connectorSlice';
-import { getWorkflowsForProject, getProjects } from '@/api/ApiService';
+import {
+  getWorkflowsForProject,
+  getProjects,
+  executeWorkflow,
+  deleteWorkflow as deleteWorkflowApi,
+} from '@/api/ApiService';
 import {
   setProjects as setProjectState,
   setTasks,
@@ -151,9 +156,43 @@ export default function Workflow() {
     );
   };
 
-  const handleDelete = () => {
-    dispatch(clearConnectorWorkflows());
-    toast.error('Please contact admin');
+  const handleExecute = async (workflowId: string) => {
+    try {
+      setLoading(true);
+      const res = await executeWorkflow({ workflow_id: workflowId });
+      if (res?.status === 200) {
+        toast.success('Workflow execution started!');
+        navigate('/workflow/jobs');
+      } else {
+        toast.error('Failed to start execution');
+      }
+    } catch (e) {
+      console.error('Execution Error:', e);
+      toast.error('Error starting execution');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (workflowId: string) => {
+    if (!window.confirm('Are you sure you want to delete this workflow?'))
+      return;
+
+    try {
+      setLoading(true);
+      const res = await deleteWorkflowApi({ workflow_id: workflowId });
+      if (res?.status === 200) {
+        toast.success('Workflow deleted successfully');
+        fetchWorkflows(selectedProjectId);
+      } else {
+        toast.error('Failed to delete workflow');
+      }
+    } catch (e) {
+      console.error('Delete Error:', e);
+      toast.error('Error deleting workflow');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns: ColumnDef<any>[] = useMemo(() => {
@@ -279,10 +318,17 @@ export default function Workflow() {
     const actionColumn: ColumnDef<any> = {
       id: 'actions',
       header: 'Actions',
-      cell: () => (
+      cell: ({ row }) => (
         <div className="flex gap-4 items-center justify-center mr-2">
           <button
-            onClick={handleDelete}
+            onClick={() => handleExecute(row.original.id)}
+            className="text-blue-600 hover:text-blue-800 cursor-pointer font-medium text-xs border border-blue-600 px-2 py-1 rounded"
+            title="Run Workflow"
+          >
+            Run
+          </button>
+          <button
+            onClick={() => handleDelete(row.original.id)}
             className="text-red-600 hover:text-red-800 cursor-pointer"
             title="Delete"
           >

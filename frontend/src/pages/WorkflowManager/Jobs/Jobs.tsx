@@ -66,7 +66,7 @@ export default function JobsMonitorDashboard() {
     return now;
   });
 
-  const [workflowJobs, setWorkflowJobs] = useState([]);
+  const [workflowJobs, setWorkflowJobs] = useState<any[]>([]);
 
   // Fetch projects on mount
   useEffect(() => {
@@ -160,17 +160,23 @@ export default function JobsMonitorDashboard() {
 
   const fetchWorkflowJobs = useRef(async (data: any) => {
     try {
-      const res = await getWorkflowJobs(data);
-      console.log('res', res);
+      const res: any = await getWorkflowJobs(data);
+      console.log('Jobs API Response:', res);
 
-      if (res?.status === 200 && res.data.length > 0) {
-        setWorkflowJobs(res.data);
+      const logsData = res?.data?.data || res?.data;
+
+      if (res?.status === 200 && Array.isArray(logsData)) {
+        setWorkflowJobs(logsData);
+        if (logsData.length === 0) {
+          toast.error('No jobs found for the selected workflow');
+        }
       } else {
         setWorkflowJobs([]);
-        toast.error('No Logs found for the seelcted workflow');
+        toast.error('Failed to fetch jobs');
       }
     } catch (e) {
-      console.log('e', e);
+      console.error('Error fetching jobs:', e);
+      toast.error('Error fetching job logs');
     }
   });
 
