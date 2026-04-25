@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 
 import type { ColumnDef } from '@tanstack/react-table';
@@ -35,8 +35,7 @@ import {
   LayoutGrid,
   Activity,
   ShieldCheck,
-  List,
-  Search,
+ 
 } from 'lucide-react';
 import {
   Tooltip,
@@ -236,11 +235,23 @@ export default function ProjectsPage() {
   // Stats calculation
   const stats = useMemo(() => {
     const projectList = Array.isArray(projects) ? projects : [];
+    
+    // Unique folders
+    const uniqueFolders = new Set(projectList.map(p => p.script_folder)).size;
+    
+    // Documentation coverage
+    const documented = projectList.filter(p => p.description && p.description.length > 0).length;
+    
+    // Name complexity (avg length)
+    const avgNameLength = projectList.length > 0 
+      ? (projectList.reduce((acc, p) => acc + (p.name?.length || 0), 0) / projectList.length).toFixed(0)
+      : '0';
+
     return [
       { label: 'Total Projects', value: projectList.length, icon: LayoutGrid, color: 'primary' },
-      { label: 'Active Systems', value: projectList.length, icon: Activity, color: 'secondary' },
-      { label: 'Infrastructure', value: projectList.length * 2, icon: ShieldCheck, color: 'tertiary' },
-      { label: 'Avg. Environments', value: '1.4', icon: Terminal, color: 'primary' }
+      { label: 'Unique Folders', value: uniqueFolders, icon: Activity, color: 'secondary' },
+      { label: 'Documented', value: documented, icon: ShieldCheck, color: 'tertiary' },
+      { label: 'Avg Name Meta', value: `${avgNameLength}ch`, icon: Terminal, color: 'primary' }
     ];
   }, [projects]);
 

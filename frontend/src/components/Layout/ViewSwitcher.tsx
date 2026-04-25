@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, List } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 
 interface ViewSwitcherProps {
   viewMode: 'card' | 'table';
@@ -12,20 +11,24 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ viewMode, onViewChan
   return (
     <div className="bg-white border border-border p-1 rounded-xl flex items-center shadow-sm">
       <Button 
-        variant={viewMode === 'card' ? 'secondary' : 'ghost'} 
+        variant="ghost"
         size="sm" 
-        className={`rounded-lg h-8 px-3 font-bold text-[10px] uppercase tracking-wider ${
-          viewMode === 'card' ? 'text-primary shadow-sm bg-primary/5' : 'text-muted-foreground'
+        className={`rounded-lg h-8 px-4 font-bold text-[10px] uppercase tracking-wider transition-all border-none ${
+          viewMode === 'card' 
+            ? 'bg-primary text-white shadow-md hover:bg-primary/90 hover:text-white' 
+            : 'text-primary hover:bg-primary/5 hover:text-primary'
         }`}
         onClick={() => onViewChange('card')}
       >
         <LayoutGrid className="w-3.5 h-3.5 mr-1.5" /> Grid
       </Button>
       <Button 
-        variant={viewMode === 'table' ? 'secondary' : 'ghost'} 
+        variant="ghost"
         size="sm" 
-        className={`rounded-lg h-8 px-3 font-bold text-[10px] uppercase tracking-wider ${
-          viewMode === 'table' ? 'text-primary shadow-sm bg-primary/5' : 'text-muted-foreground'
+        className={`rounded-lg h-8 px-4 font-bold text-[10px] uppercase tracking-wider transition-all border-none ${
+          viewMode === 'table' 
+            ? 'bg-primary text-white shadow-md hover:bg-primary/90 hover:text-white' 
+            : 'text-primary hover:bg-primary/5 hover:text-primary'
         }`}
         onClick={() => onViewChange('table')}
       >
