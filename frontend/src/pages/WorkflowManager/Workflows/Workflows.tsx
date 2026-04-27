@@ -6,19 +6,18 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2 } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Play,
+  Eye,
+  GitBranch,
+  CheckCircle2,
+  LayoutGrid,
+  ListTree,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { DataTable } from '@/components/Table/Table';
-import { SectionHeading } from '@/components/Headings/SectionHeading';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -27,9 +26,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 
 import WorkflowViewer from './View/WorkflowViewer';
-import { clearConnectorWorkflows } from '@/redux/slices/connectorSlice';
 import {
   getWorkflowsForProject,
   getProjects,
@@ -40,7 +46,12 @@ import {
   setProjects as setProjectState,
   setTasks,
 } from '@/redux/slices/workflowSlice';
-import { ConfirmDeleteDialog } from '@/components/Dialogs/ConfirmDeleteDialog';
+import { PageLayout } from '@/components/Layout/PageLayout';
+import type {
+  StatConfig,
+  RowAction,
+  CardConfig,
+} from '@/components/Layout/PageLayout';
 
 export default function Workflow() {
   const navigate = useNavigate();
@@ -51,6 +62,8 @@ export default function Workflow() {
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<any | null>(null);
+  const [isCardViewDialogOpen, setIsCardViewDialogOpen] = useState(false);
+  const [cardViewWorkflow, setCardViewWorkflow] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [workflowToDeleteId, setWorkflowToDeleteId] = useState<string | null>(
@@ -61,19 +74,16 @@ export default function Workflow() {
     dispatch(setTasks([]));
   }, []);
 
-  // Ref for fetchProjects
+  // ── Fetch projects (ref-wrapped, identical to original) ───────────────────
   const fetchProjectsRef = useRef(async () => {
     try {
       const res = await getProjects();
-
       const projectData = res?.data?.data || res?.data;
 
       if (Array.isArray(projectData) && projectData.length > 0) {
         dispatch(setProjectState(projectData));
-
         const firstProjectId = String(projectData[0].id);
         setSelectedProjectId(firstProjectId);
-
         fetchWorkflows(firstProjectId);
       }
     } catch (e) {
@@ -90,7 +100,6 @@ export default function Workflow() {
     try {
       setLoading(true);
       const res = await getWorkflowsForProject({ project_id: projectId });
-
       const workflowsData = res?.data?.data;
       if (res?.status === 200 && Array.isArray(workflowsData)) {
         setWorkflows(workflowsData);
@@ -105,6 +114,8 @@ export default function Workflow() {
       setLoading(false);
     }
   };
+
+  // ── Identical helpers from original ───────────────────────────────────────
 
   const countTasks = (task: any): number => {
     let count = 1;
@@ -161,6 +172,8 @@ export default function Workflow() {
     );
   };
 
+  // ── Handlers (identical to original) ──────────────────────────────────────
+
   const handleExecute = async (workflow: any) => {
     try {
       setLoading(true);
@@ -191,7 +204,6 @@ export default function Workflow() {
 
   const handleConfirmDelete = async () => {
     if (!workflowToDeleteId) return;
-
     try {
       setLoading(true);
       const res = await deleteWorkflowApi({ workflow_id: workflowToDeleteId });
@@ -211,7 +223,48 @@ export default function Workflow() {
     }
   };
 
-  const columns: ColumnDef<any>[] = useMemo(() => {
+  // ── Stats ─────────────────────────────────────────────────────────────────
+
+  const stats = useMemo<StatConfig[]>(() => {
+    const totalTasks = workflows.reduce(
+      (acc, w) => acc + (w.tasks ? countTasks(w.tasks) : 0),
+      0,
+    );
+    const withScheduler = workflows.filter(
+      (w) => w.scheduler_detail && Object.keys(w.scheduler_detail).length > 0,
+    ).length;
+
+    return [
+      {
+        label: 'Total Workflows',
+        getValue: (d) => d.length,
+        icon: GitBranch,
+        color: 'primary',
+      },
+      {
+        label: 'Total Tasks',
+        getValue: () => totalTasks,
+        icon: ListTree,
+        color: 'secondary',
+      },
+      {
+        label: 'Scheduled',
+        getValue: () => withScheduler,
+        icon: CheckCircle2,
+        color: 'tertiary',
+      },
+      {
+        label: 'Projects',
+        getValue: () => projects.length,
+        icon: LayoutGrid,
+        color: 'primary',
+      },
+    ];
+  }, [workflows, projects]);
+
+  // ── Table columns (identical cell renderers from original) ────────────────
+
+  const columns = useMemo<ColumnDef<any>[]>(() => {
     const baseColumns =
       workflows.length > 0
         ? Object.keys(workflows[0])
@@ -290,7 +343,6 @@ export default function Workflow() {
         return (
           <div className="max-w-md bg-muted p-3 rounded text-xs space-y-2">
             {taskPreview}
-
             {exceedsLimit && (
               <div className="w-full text-center mt-2">
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -317,7 +369,6 @@ export default function Workflow() {
                           task chains.
                         </DialogDescription>
                       </DialogHeader>
-
                       <div className="flex-1 w-full">
                         <WorkflowViewer workflow={selectedWorkflow} />
                       </div>
@@ -357,64 +408,159 @@ export default function Workflow() {
     return [...baseColumns, taskCountColumn, tasksColumn, actionColumn];
   }, [workflows, selectedWorkflow, isDialogOpen]);
 
-  return (
-    <div className="grid gap-6 p-4 max-w-7xl mx-auto lg:px-6">
-      <ConfirmDeleteDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleConfirmDelete}
-        title="Delete Workflow?"
-        description="Are you sure you want to delete this workflow? This will only delete the workflow definition and will not affect the underlying tasks."
-      />
-      <div className="flex justify-between items-center">
-        <SectionHeading
-          title="Workflows"
-          description="Overview of created connector and/or form workflows."
-        />
-        <Button onClick={() => navigate('/workflow/create')}>
-          <Plus className="mr-2 w-4 h-4" /> Add Workflow
-        </Button>
-      </div>
+  // ── Row Actions (card view only — table uses inline action column) ─────────
 
-      <div className="w-64">
-        <Select
-          value={selectedProjectId}
-          onValueChange={(val) => {
-            setSelectedProjectId(val);
-            fetchWorkflows(val);
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Project" />
-          </SelectTrigger>
-          <SelectContent>
-            {projects.map((proj: any) => (
-              <SelectItem key={proj.id} value={String(proj.id)}>
-                {proj.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+  const rowActions = useMemo<RowAction<any>[]>(
+    () => [
+      {
+        label: 'View Workflow',
+        icon: Eye,
+        variant: 'default',
+        onClick: (workflow) => {
+          setCardViewWorkflow(workflow);
+          setIsCardViewDialogOpen(true);
+        },
+      },
+      {
+        label: 'Run Workflow',
+        icon: Play,
+        variant: 'default',
+        onClick: handleExecute,
+      },
+      {
+        label: 'Delete Workflow',
+        icon: Trash2,
+        variant: 'danger',
+        onClick: (workflow) => handleDeleteClick(workflow.id),
+      },
+    ],
+    [],
+  );
 
-      {loading ? (
-        <div className="w-full py-20 flex justify-center items-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-t-transparent border-primary rounded-full animate-spin" />
-            <p className="text-lg font-medium text-gray-700">
-              Loading workflows...
-            </p>
-          </div>
-        </div>
-      ) : (
-        <DataTable
-          pagination
-          toolbar
-          columns={workflows.length > 0 ? columns : []}
-          data={workflows}
-          searchBy="workflow_name"
-        />
-      )}
+  // ── Card Config ───────────────────────────────────────────────────────────
+
+  const cardConfig = useMemo<CardConfig<any>>(
+    () => ({
+      titleKey: 'workflow_name',
+      subtitleKey: 'id',
+      descriptionKey: 'description',
+      descriptionFallback:
+        'No description provided. This workflow orchestrates a set of tasks in a defined execution order.',
+      statusBadge: (workflow) => ({
+        label: workflow.scheduler_detail?.cron ? 'Scheduled' : 'Manual',
+      }),
+    }),
+    [],
+  );
+
+  // ── Project selector bar (same pattern as Tasks.tsx) ─────────────────────
+
+  const projectSelectorNode = (
+    <div className="flex items-center gap-3 flex-wrap">
+      <span className="text-sm font-medium text-muted-foreground">
+        Viewing workflows for:
+      </span>
+      <Select
+        value={selectedProjectId}
+        onValueChange={(val) => {
+          setSelectedProjectId(val);
+          fetchWorkflows(val);
+        }}
+      >
+        <SelectTrigger className="w-[220px] h-9 text-sm font-semibold">
+          <SelectValue placeholder="Select project" />
+        </SelectTrigger>
+        <SelectContent>
+          {projects.map((proj: any) => (
+            <SelectItem key={proj.id} value={String(proj.id)}>
+              {proj.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Separator orientation="vertical" className="h-5 hidden sm:block" />
+      <span className="text-xs text-muted-foreground">
+        {workflows.length} workflow{workflows.length !== 1 ? 's' : ''}
+      </span>
     </div>
+  );
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <>
+      {/* Project selector bar */}
+      <div className="bg-[#fdfdfb] px-6 lg:px-8 py-4 max-w-[1600px] mx-auto border-b border-neutral-200/60">
+        <div className="bg-white border border-neutral-100 rounded-xl shadow-sm px-5 py-3 flex items-center gap-4 flex-wrap">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Project
+          </span>
+          <Separator orientation="vertical" className="h-5" />
+          {projectSelectorNode}
+        </div>
+      </div>
+
+      <PageLayout<any>
+        // ── Page meta ──────────────────────────────────────────────────────
+        title="Workflows"
+        subtitle="Overview of created connector and/or form workflows."
+        defaultView="table"
+        // ── Data ───────────────────────────────────────────────────────────
+        data={workflows}
+        isLoading={loading}
+        loadingLabel="Loading Workflows"
+        searchBy="workflow_name"
+        // ── Stats ──────────────────────────────────────────────────────────
+        stats={stats}
+        // ── Table (with all original columns including task tree + actions) ─
+        columns={columns}
+        // ── Card ───────────────────────────────────────────────────────────
+        cardConfig={cardConfig}
+        rowActions={rowActions}
+        // ── External delete dialog ─────────────────────────────────────────
+        externalDeleteDialog={{
+          open: deleteDialogOpen,
+          onOpenChange: setDeleteDialogOpen,
+          onConfirm: handleConfirmDelete,
+          title: 'Delete Workflow?',
+          description:
+            'Are you sure you want to delete this workflow? This will only delete the workflow definition and will not affect the underlying tasks.',
+        }}
+        // ── Header action ──────────────────────────────────────────────────
+        actions={[
+          {
+            label: 'Add Workflow',
+            icon: Plus,
+            onClick: () => navigate('/workflow/create'),
+          },
+        ]}
+      />
+
+      {/* ── Card-view Workflow Viewer Dialog ── */}
+      <Dialog
+        open={isCardViewDialogOpen}
+        onOpenChange={(open) => {
+          setIsCardViewDialogOpen(open);
+          if (!open) setCardViewWorkflow(null);
+        }}
+      >
+        {cardViewWorkflow && (
+          <DialogContent className="max-w-[90dvw]! w-[90dvw]! h-[90dvh]! max-h-[90dvh]! overflow-auto p-4 flex flex-col gap-4">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold">
+                Workflow Preview: {cardViewWorkflow.workflow_name}
+              </DialogTitle>
+              <DialogDescription>
+                Full visual view of the workflow including all nested task
+                chains.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 w-full">
+              <WorkflowViewer workflow={cardViewWorkflow} />
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
+    </>
   );
 }
