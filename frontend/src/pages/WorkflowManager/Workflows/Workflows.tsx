@@ -180,12 +180,12 @@ export default function Workflow() {
       const res = await executeWorkflow({ workflow_id: workflow.id });
       if (res?.status === 200) {
         toast.success('Workflow execution started!');
-        navigate('/workflow/jobs', {
-          state: {
-            projectId: selectedProjectId,
-            workflowName: workflow.workflow_name,
-          },
-        });
+        // navigate('/workflow/jobs', {
+        //   state: {
+        //     projectId: selectedProjectId,
+        //     workflowName: workflow.workflow_name,
+        //   },
+        // });
       } else {
         toast.error('Failed to start execution');
       }
@@ -439,16 +439,48 @@ export default function Workflow() {
 
   // ── Card Config ───────────────────────────────────────────────────────────
 
+  // Derive a display-ready description per workflow: prefer the real description
+  // field; fall back to the scheduler cron + detail so cards never show a
+  // generic placeholder when scheduling info is available.
+  const workflowsWithDescription = useMemo(
+    () =>
+      workflows.map((w) => {
+        if (w.description) return w;
+        const s = w.scheduler_detail;
+        const syntheticDesc = s?.cron
+          ? `Scheduled${s.detail ? `: ${s.detail}` : ''}  •  Cron: ${s.cron}`
+          : null;
+        return { ...w, _cardDesc: syntheticDesc };
+      }),
+    [workflows],
+  );
+
   const cardConfig = useMemo<CardConfig<any>>(
     () => ({
       titleKey: 'workflow_name',
       subtitleKey: 'id',
-      descriptionKey: 'description',
+      descriptionKey: '_cardDesc',
       descriptionFallback:
         'No description provided. This workflow orchestrates a set of tasks in a defined execution order.',
       statusBadge: (workflow) => ({
         label: workflow.scheduler_detail?.cron ? 'Scheduled' : 'Manual',
       }),
+      metaBadge: (workflow) => {
+        const s = workflow.scheduler_detail;
+        if (!s?.cron) return null;
+        return (
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="font-mono text-[10px] font-bold text-primary bg-primary/5 border border-primary/15 px-2 py-0.5 rounded-md tracking-tight">
+              {s.cron}
+            </span>
+            {s.detail && (
+              <span className="text-[9px] text-muted-foreground capitalize">
+                {s.detail}
+              </span>
+            )}
+          </div>
+        );
+      },
     }),
     [],
   );
@@ -506,7 +538,7 @@ export default function Workflow() {
         subtitle="Overview of created connector and/or form workflows."
         defaultView="table"
         // ── Data ───────────────────────────────────────────────────────────
-        data={workflows}
+        data={workflowsWithDescription}
         isLoading={loading}
         loadingLabel="Loading Workflows"
         searchBy="workflow_name"

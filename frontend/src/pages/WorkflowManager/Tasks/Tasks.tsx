@@ -137,10 +137,6 @@ export default function Tasks() {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleEdit = (task: Task) => {
-    navigate('/workflow/tasks/create', { state: { task } });
-  };
-
   const handleDeleteClick = (task: Task) => {
     setTaskToDeleteId(task.id);
     setDeleteDialogOpen(true);
