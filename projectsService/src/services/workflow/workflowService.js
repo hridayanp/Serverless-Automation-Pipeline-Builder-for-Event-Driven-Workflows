@@ -110,13 +110,14 @@ export const fetchLogs = async ({ workflow_id }) => {
 
   return runs.map((run) => {
     const workflow = workflows.find((w) => w.id === run.workflow_id);
-    const project = projects.find((p) => p.id === workflow.project_id);
+    const project = workflow ? projects.find((p) => p.id === workflow.project_id) : null;
 
     const runTaskLogs = taskLogs
       .filter((t) => t.run_id === run.run_id)
       .map((tl) => {
         const task = tasks.find((t) => t.id === tl.task_id);
         return {
+          task_id: tl.task_id,
           task_name: task?.name,
           start_date: tl.start_date,
           end_date: tl.end_date,
@@ -124,15 +125,16 @@ export const fetchLogs = async ({ workflow_id }) => {
         };
       });
 
-    return {
-      run_id: run.run_id,
-      workflow_id: run.workflow_id,
-      project_name: project?.name,
-      workflow_status: run.status,
-      start_date: run.start_date,
-      end_date: run.end_date,
-      task_logs: runTaskLogs,
-    };
+      return {
+        run_id: run.run_id,
+        workflow_id: run.workflow_id,
+        project_name: project?.name,
+        workflow_status: run.status,
+        execution_path: run.execution_path || [],
+        start_date: run.start_date,
+        end_date: run.end_date,
+        task_logs: runTaskLogs,
+      };
   });
 };
 
@@ -231,4 +233,36 @@ export const isTaskInWorkflows = async (taskId) => {
   };
 
   return workflows.some((w) => searchTask(w.tasks, taskId));
+};
+
+/* --------------------------------------------------
+   DELETE WORKFLOW RUN (LOGS ONLY)
+-------------------------------------------------- */
+export const deleteWorkflowRun = async (runId) => {
+  if (!runId) {
+    throw new Error('run_id is required');
+  }
+
+  // 1. Delete associated task logs
+  const taskLogs = await scanTable(TASK_LOGS);
+  const relatedTaskLogs = taskLogs.filter((tl) => tl.run_id === runId);
+  
+  if (relatedTaskLogs.length > 0) {
+    await Promise.all(
+      relatedTaskLogs.map((tl) => 
+        deleteItem(TASK_LOGS, { 
+          run_id: tl.run_id, 
+          task_id: tl.task_id 
+        })
+      )
+    );
+  }
+
+  // 2. Delete the main workflow log entry
+  await deleteItem(WORKFLOW_LOGS, { run_id: runId });
+
+  return {
+    run_id: runId,
+    message: 'Workflow run logs deleted successfully',
+  };
 };

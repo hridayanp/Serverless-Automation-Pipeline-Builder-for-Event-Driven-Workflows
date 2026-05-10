@@ -54,3 +54,4 @@ export const getWorkflows = withAuth(workflowController.getWorkflows);
 export const executeWorkflow = withAuth(workflowController.executeWorkflow);
 export const fetchWorkflowLogs = withAuth(workflowController.fetchWorkflowLogs);
 export const deleteWorkflow = withAuth(workflowController.deleteWorkflow);
+export const deleteWorkflowRun = withAuth(workflowController.deleteWorkflowRun);

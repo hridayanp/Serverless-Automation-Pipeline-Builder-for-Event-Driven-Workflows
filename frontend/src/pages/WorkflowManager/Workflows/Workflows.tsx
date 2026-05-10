@@ -180,12 +180,12 @@ export default function Workflow() {
       const res = await executeWorkflow({ workflow_id: workflow.id });
       if (res?.status === 200) {
         toast.success('Workflow execution started!');
-        // navigate('/workflow/jobs', {
-        //   state: {
-        //     projectId: selectedProjectId,
-        //     workflowName: workflow.workflow_name,
-        //   },
-        // });
+        navigate('/workflow/jobs', {
+          state: {
+            projectId: selectedProjectId,
+            workflowName: workflow.workflow_name,
+          },
+        });
       } else {
         toast.error('Failed to start execution');
       }

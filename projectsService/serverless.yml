@@ -214,12 +214,26 @@ functions:
           method: delete
           authorizer: cognitoAuth
 
+  deleteWorkflowRun:
+    handler: handler.deleteWorkflowRun
+    events:
+      - httpApi:
+          path: /workflows/runs/{run_id}
+          method: delete
+          authorizer: cognitoAuth
+
   # --------------------------------------------------------
   # Workflow Executor (async / internal)
   # --------------------------------------------------------
   workflowExecutor:
     handler: src/workers/workflowExecutor.handler
     timeout: 900
+
+  pythonTaskRunner:
+    handler: src/workers/pythonTaskRunner.handler
+    runtime: python3.12
+    timeout: 900
+    memorySize: 512
 
 # ------------------------------------------------------------
 # DynamoDB Tables

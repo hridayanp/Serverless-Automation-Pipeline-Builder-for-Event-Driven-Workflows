@@ -15,8 +15,15 @@ export const handler = async (event) => {
     return;
   }
 
+  const executionPath = [];
+
   try {
-    await runNode(workflow.tasks, runId);
+    // Initial update to ensure the execution_path field exists
+    await updateItem(process.env.TABLE_WORKFLOW_LOGS, { run_id: runId }, 'SET execution_path = :empty', {
+      ':empty': [],
+    });
+
+    await runNode(workflow.tasks, runId, executionPath);
 
     await updateWorkflowStatus(runId, 'COMPLETED');
   } catch (err) {
@@ -28,32 +35,59 @@ export const handler = async (event) => {
 /**
  * Recursively runs task nodes based on outcomes
  */
-const runNode = async (node, runId) => {
+const runNode = async (node, runId, executionPath) => {
   if (!node || !node.task_id) return;
 
   // executeTask handles logging to WorkflowTaskLogsTable when runId is provided
   const result = await taskService.executeTask(node.task_id, runId);
 
+  const step = {
+    task_id: node.task_id,
+    success: result.success,
+    duration: result.duration || 0,
+    timestamp: new Date().toISOString(),
+  };
+
   // Determine the next node based on outcome
   const outcome = result.success ? 'on_success' : 'on_failure';
   let nextNode = node.children?.[outcome];
+  let branchTaken = outcome;
 
   // Fallback to on_completion if specific outcome branch doesn't exist
   if (!nextNode && node.children?.['on_completion']) {
     nextNode = node.children['on_completion'];
+    branchTaken = 'on_completion';
   }
 
+  step.branch_taken = nextNode ? branchTaken : 'FINISH';
+  executionPath.push(step);
+
+  // Incremental update of the execution path for real-time visibility
+  await appendToExecutionPath(runId, step);
+
   if (nextNode) {
-    // If it's an array of children (parallel execution is not yet supported in this simple recursion, 
-    // but we can loop through them if needed. For now, assuming single node or object)
     if (Array.isArray(nextNode)) {
       for (const child of nextNode) {
-        await runNode(child, runId);
+        await runNode(child, runId, executionPath);
       }
     } else {
-      await runNode(nextNode, runId);
+      await runNode(nextNode, runId, executionPath);
     }
   }
+};
+
+/**
+ * Appends a step to the execution_path in DynamoDB
+ */
+const appendToExecutionPath = async (runId, step) => {
+  await updateItem(
+    process.env.TABLE_WORKFLOW_LOGS,
+    { run_id: runId },
+    'SET execution_path = list_append(execution_path, :step)',
+    {
+      ':step': [step],
+    },
+  );
 };
 
 /**
@@ -68,6 +102,6 @@ const updateWorkflowStatus = async (runId, status) => {
       ':s': status,
       ':e': new Date().toISOString(),
     },
-    { '#s': 'status' }
+    { '#s': 'status' },
   );
 };

@@ -228,3 +228,39 @@ export const deleteWorkflow = async (event) => {
     };
   }
 };
+
+/* ----------------------------------
+   DELETE WORKFLOW RUN (LOGS ONLY)
+   DELETE /workflows/runs/{run_id}
+---------------------------------- */
+export const deleteWorkflowRun = async (event) => {
+  const response = new CustomResponse();
+  const { run_id } = event.pathParameters || {};
+
+  try {
+    if (!run_id) {
+      throw new Error('run_id is required');
+    }
+
+    const result = await workflowService.deleteWorkflowRun(run_id);
+
+    response.status = 'SUCCESS';
+    response.message = 'Workflow run logs deleted successfully';
+    response.data = result;
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(response),
+    };
+  } catch (err) {
+    response.status = 'FAILURE';
+    response.message = err.message || 'Workflow run deletion failed';
+
+    return {
+      statusCode: err.message?.includes('required') ? 400 : 500,
+      headers,
+      body: JSON.stringify(response),
+    };
+  }
+};

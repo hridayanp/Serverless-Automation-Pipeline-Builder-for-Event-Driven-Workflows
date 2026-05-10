@@ -15,6 +15,7 @@ import {
 import * as workflowService from '../workflow/workflowService.js';
 
 import { putFile, getFile } from '../aws/s3Service.js';
+import { invokeSync } from '../aws/lambdaService.js';
 
 const TABLE = process.env.TABLE_TASKS;
 const BUCKET = process.env.BUCKET_TASK_FILES;
@@ -193,6 +194,36 @@ export const updateTaskStatus = async (taskId, status) => {
 };
 
 /* ============================================================
+   Helper: Install Dependencies
+   ============================================================ */
+const installDependencies = (scriptDir, requirementsPath) => {
+  if (!fs.existsSync(requirementsPath)) return '';
+
+  try {
+    const installDir = path.join(scriptDir, 'libs');
+    if (!fs.existsSync(installDir)) {
+      fs.mkdirSync(installDir, { recursive: true });
+    }
+
+    // Attempt to install dependencies into /tmp/libs
+    const result = spawnSync(
+      'python3',
+      ['-m', 'pip', 'install', '-r', requirementsPath, '-t', installDir],
+      {
+        encoding: 'utf8',
+        timeout: 300000, // 5 minutes max for pip install
+      },
+    );
+
+    return `=== DEPENDENCY INSTALLATION ===\n${
+      result.stdout || ''
+    }\n${result.stderr || ''}\nExit Code: ${result.status}\n\n`;
+  } catch (err) {
+    return `=== DEPENDENCY INSTALLATION FAILED ===\n${err.message}\n\n`;
+  }
+};
+
+/* ============================================================
    EXECUTE TASK — download script from S3 & run locally
    ============================================================ */
 export const executeTask = async (taskId, runId = null) => {
@@ -203,7 +234,6 @@ export const executeTask = async (taskId, runId = null) => {
 
   const updateStatus = async (status) => {
     if (runId) {
-      // Track within workflow run
       let updateExpression = 'SET #s = :s, updated_at = :u';
       const expressionValues = {
         ':s': status,
@@ -227,7 +257,6 @@ export const executeTask = async (taskId, runId = null) => {
         expressionNames,
       );
     } else {
-      // Standalone execution (global status)
       await updateTaskStatus(taskId, status);
     }
   };
@@ -237,53 +266,57 @@ export const executeTask = async (taskId, runId = null) => {
     throw new Error('Missing script file');
   }
 
-  // Create temporary directory
-  const scriptDir = path.join(BASE_TMP, 'task-run', taskId);
-  fs.mkdirSync(scriptDir, { recursive: true });
-
-  const scriptPath = path.join(scriptDir, 'script.py');
-
   try {
-    // Download script from S3
-    const fileObj = await getFile(BUCKET, task.file_data_s3_key);
-    fs.writeFileSync(scriptPath, fileObj.buffer.toString());
-
     await updateStatus('RUNNING');
 
-    // Execute the script
-    const result = spawnSync('python3', [scriptPath], {
-      encoding: 'utf8',
-      maxBuffer: 10 * 1024 * 1024,
-    });
+    // 1. Prepare Environment Requirements
+    let envReqContent = null;
+    if (task.environment_id) {
+      const env = await getItem(process.env.TABLE_PROJECT_ENVS, {
+        id: task.environment_id,
+      });
+      if (env && env.file_content) {
+        envReqContent = env.file_content; // Already Base64 from DB/Upload
+      }
+    }
 
-    const stdout = result.stdout || '';
-    const stderr = result.stderr || '';
-    const exitCode = result.status;
+    // 2. Invoke the Python Task Runner
+    const runnerFunctionName = `projectService-${process.env.STAGE || 'dev'}-pythonTaskRunner`;
+    
+    const runnerPayload = {
+      taskId,
+      runId: runId || 'standalone',
+      s3Key: task.file_data_s3_key,
+      reqKey: task.requirements_s3_key,
+      envReqContent
+    };
 
-    const fullLog = `=== STDOUT ===\n${stdout}\n\n=== STDERR ===\n${stderr}\nexitCode: ${exitCode}`;
+    console.log(`Invoking Python Runner: ${runnerFunctionName}`);
+    const result = await invokeSync(runnerFunctionName, runnerPayload);
+    
+    if (!result || result.success === undefined) {
+      throw new Error('Invalid response from Python Runner');
+    }
 
-    // Upload logs to S3
-    const logKey = `tasks/${taskId}/${task.log_file_name}`;
-    await putFile(BUCKET, logKey, Buffer.from(fullLog, 'utf8'), 'text/plain');
-
-    // Update task log key in metadata
-    await updateItem(TABLE, { id: taskId }, 'SET log_file_s3_key = :k, updated_at = :u', {
-      ':k': logKey,
-      ':u': new Date().toISOString(),
-    });
-
-    if (exitCode !== 0) {
+    if (!result.success) {
       await updateStatus('FAILED');
-      return { success: false, exitCode };
+      return { 
+        success: false, 
+        exitCode: result.exitCode || 1, 
+        duration: result.duration || 0 
+      };
     }
 
     await updateStatus('COMPLETED');
-    return { success: true, exitCode: 0 };
-  } finally {
-    // Cleanup temporary files to prevent disk filling in Lambda
-    if (fs.existsSync(scriptDir)) {
-      fs.rmSync(scriptDir, { recursive: true, force: true });
-    }
+    return { 
+      success: true, 
+      exitCode: 0, 
+      duration: result.duration || 0 
+    };
+  } catch (err) {
+    console.error('Task Execution Error:', err);
+    await updateStatus('FAILED');
+    throw err;
   }
 };
 

@@ -11,9 +11,11 @@ import {
   Loader2,
   XCircle,
   GitBranch,
+  Activity,
+  ChevronRight,
+  Trash2,
   CheckCircle2,
   AlertCircle,
-  Activity,
 } from 'lucide-react';
 
 import { setProjects as setProjectState } from '@/redux/slices/workflowSlice';
@@ -21,6 +23,7 @@ import {
   getProjects,
   getWorkflowJobs,
   getWorkflowsForProject,
+  deleteWorkflowRun,
 } from '@/api/ApiService';
 
 import {
@@ -39,10 +42,20 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 import toast from 'react-hot-toast';
 import { format, isValid } from 'date-fns';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export default function JobsMonitorDashboard() {
   const dispatch = useDispatch();
@@ -72,6 +85,8 @@ export default function JobsMonitorDashboard() {
   });
 
   const [workflowJobs, setWorkflowJobs] = useState<any[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [runToDeleteId, setRunToDeleteId] = useState<string | null>(null);
 
   // ── Fetch projects on mount (identical to original) ───────────────────────
   useEffect(() => {
@@ -184,6 +199,28 @@ export default function JobsMonitorDashboard() {
       toast.error('Error fetching job logs');
     }
   });
+
+  const handleDeleteRun = async () => {
+    if (!runToDeleteId) return;
+
+    try {
+      setLoading(true);
+      const res = await deleteWorkflowRun({ run_id: runToDeleteId });
+      if (res?.status === 200) {
+        toast.success('Job run deleted');
+        setWorkflowJobs((prev) => prev.filter((j) => j.run_id !== runToDeleteId));
+      } else {
+        toast.error('Failed to delete job run');
+      }
+    } catch (e) {
+      console.error('Delete run error:', e);
+      toast.error('Error deleting run');
+    } finally {
+      setLoading(false);
+      setDeleteDialogOpen(false);
+      setRunToDeleteId(null);
+    }
+  };
 
   // ── Stats derived from workflowJobs ───────────────────────────────────────
   const stats = useMemo(() => {
@@ -448,18 +485,14 @@ export default function JobsMonitorDashboard() {
               ).length;
 
               let StatusIcon = CheckCircle;
-              let statusColor = 'text-green-600';
               const status = job.workflow_status?.toLowerCase();
 
               if (status === 'failed') {
                 StatusIcon = XCircle;
-                statusColor = 'text-red-600';
               } else if (status === 'queued') {
                 StatusIcon = Clock;
-                statusColor = 'text-gray-500';
               } else if (status === 'executing' || status === 'running') {
                 StatusIcon = Loader2;
-                statusColor = 'text-yellow-600 animate-spin';
               }
 
               return (
@@ -468,35 +501,97 @@ export default function JobsMonitorDashboard() {
                   onClick={() =>
                     navigate('/workflow/job-details', { state: { job } })
                   }
-                  className="cursor-pointer bg-white rounded-xl border border-neutral-100 p-5 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group"
+                  className="cursor-pointer bg-white rounded-xl border border-neutral-100 p-5 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group relative overflow-hidden"
                 >
+                  {status === 'executing' || status === 'running' ? (
+                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 animate-pulse" />
+                  ) : status === 'failed' ? (
+                    <div className="absolute top-0 left-0 w-1 h-full bg-red-500" />
+                  ) : (
+                    <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
+                  )}
+
                   <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
-                      <StatusIcon className={`w-5 h-5 mt-1 ${statusColor}`} />
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={cn(
+                          'p-3 rounded-xl',
+                          status === 'failed'
+                            ? 'bg-red-50 text-red-600'
+                            : status === 'executing' || status === 'running'
+                              ? 'bg-blue-50 text-blue-600'
+                              : 'bg-green-50 text-green-600',
+                        )}
+                      >
+                        <StatusIcon
+                          className={cn(
+                            'w-6 h-6',
+                            (status === 'executing' || status === 'running') &&
+                              'animate-spin',
+                          )}
+                        />
+                      </div>
                       <div>
-                        <div className="text-lg font-bold text-[#1a2c20] group-hover:text-primary transition-colors">
-                          {job.project_name}
+                        <div className="flex items-center gap-3">
+                          <div className="text-lg font-bold text-[#1a2c20] group-hover:text-primary transition-colors">
+                            {job.project_name}
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'text-[10px] font-bold uppercase tracking-widest',
+                              status === 'failed'
+                                ? 'text-red-600 border-red-100 bg-red-50'
+                                : status === 'executing' || status === 'running'
+                                  ? 'text-blue-600 border-blue-100 bg-blue-50'
+                                  : 'text-green-600 border-green-100 bg-green-50',
+                            )}
+                          >
+                            {status}
+                          </Badge>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          Workflow Run ID:{' '}
-                          <span className="font-medium text-foreground">
-                            #{job.run_id}
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Run ID:{' '}
+                          <span className="font-mono text-foreground font-semibold">
+                            #{job.run_id.slice(0, 13)}...
                           </span>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Start: {job.start_date ?? 'N/A'}
-                          {job.end_date && <> &rarr; End: {job.end_date}</>}
-                        </div>
-                        <div className="text-xs mt-1">
-                          <span className="text-green-600">
-                            {successCount} Success
-                          </span>{' '}
-                          |{' '}
-                          <span className="text-red-500">
-                            {failedCount} Failed
-                          </span>
+                        <div className="flex items-center gap-4 mt-3">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Clock className="w-3.5 h-3.5" />
+                            {job.start_date
+                              ? format(
+                                  new Date(job.start_date),
+                                  'MMM d, HH:mm:ss',
+                                )
+                              : 'N/A'}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="flex items-center gap-1 text-[11px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                              <CheckCircle2 className="w-3 h-3" />
+                              {successCount}
+                            </span>
+                            <span className="flex items-center gap-1 text-[11px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100">
+                              <XCircle className="w-3 h-3" />
+                              {failedCount}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRunToDeleteId(job.run_id);
+                          setDeleteDialogOpen(true);
+                        }}
+                        className="p-2 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                        title="Delete Run"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
                   </div>
                 </div>
@@ -505,6 +600,48 @@ export default function JobsMonitorDashboard() {
           </div>
         )}
       </div>
+
+      {/* ── Delete Confirmation Dialog ── */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="w-5 h-5" />
+              Delete Job Run
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this job run? This action cannot be undone and will permanently remove all logs associated with this run.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setRunToDeleteId(null);
+              }}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteRun}
+              disabled={loading}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Permanently'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

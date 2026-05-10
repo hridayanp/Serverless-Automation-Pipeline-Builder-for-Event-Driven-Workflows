@@ -16,3 +16,18 @@ export const invokeAsync = async (functionName, payload) => {
 
   return await client.send(command);
 };
+
+/**
+ * Invokes a Lambda function synchronously and returns the result
+ */
+export const invokeSync = async (functionName, payload) => {
+  const command = new InvokeCommand({
+    FunctionName: functionName,
+    InvocationType: 'RequestResponse',
+    Payload: JSON.stringify(payload),
+  });
+
+  const response = await client.send(command);
+  const result = JSON.parse(Buffer.from(response.Payload).toString());
+  return result;
+};
