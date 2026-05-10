@@ -91,10 +91,10 @@ def handler(event, context):
         log_key = f"tasks/{task_id}/task.log"
         s3.put_object(Bucket=BUCKET, Key=log_key, Body=pipeline_logs.encode('utf-8'))
         
-        # 6. Update Task Metadata in DynamoDB (for the log key)
-        tasks_table = dynamodb.Table(TABLE_TASKS)
-        tasks_table.update_item(
-            Key={'id': task_id},
+        # 6. Update Task Metadata in Run-Specific Table
+        run_task_table = dynamodb.Table(TABLE_WORKFLOW_TASK_LOGS)
+        run_task_table.update_item(
+            Key={'run_id': run_id, 'task_id': task_id},
             UpdateExpression="SET log_file_s3_key = :k, updated_at = :u",
             ExpressionAttributeValues={
                 ':k': log_key,

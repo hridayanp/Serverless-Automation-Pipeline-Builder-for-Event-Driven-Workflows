@@ -99,13 +99,15 @@ export const getTaskLogFile = async (event) => {
   const response = new CustomResponse();
   try {
     const { taskId } = event.pathParameters || {};
+    const { log_key } = event.queryStringParameters || {};
+
     if (!taskId) {
       response.status = 'FAILURE';
       response.message = 'Missing taskId';
       return { statusCode: 400, headers, body: JSON.stringify(response) };
     }
 
-    const logData = await taskService.getTaskLogs(taskId);
+    const logData = await taskService.getTaskLogs(taskId, log_key);
 
     response.status = 'SUCCESS';
     response.message = 'Task log retrieved';

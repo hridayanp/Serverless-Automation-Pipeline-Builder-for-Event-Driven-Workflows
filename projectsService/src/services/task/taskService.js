@@ -333,11 +333,13 @@ export const deleteTasksByProject = async (projectId) => {
 /* ============================================================
    RETRIEVE LOG FILE FROM S3 (Base64)
    ============================================================ */
-export const getTaskLogs = async (taskId) => {
+export const getTaskLogs = async (taskId, logKey = null) => {
   const task = await getTaskById(taskId);
-  if (!task?.log_file_s3_key) throw new Error('Logs not found');
+  const s3Key = logKey || task?.log_file_s3_key;
 
-  const fileObj = await getFile(BUCKET, task.log_file_s3_key);
+  if (!s3Key) throw new Error('Logs not found');
+
+  const fileObj = await getFile(BUCKET, s3Key);
 
   return {
     taskId,

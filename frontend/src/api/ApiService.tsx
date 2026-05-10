@@ -181,8 +181,10 @@ export const getTaskLogs = (data: any) => {
     Accept: 'application/json',
   };
 
+  const query = data.log_key ? `?log_key=${encodeURIComponent(data.log_key)}` : '';
+
   return ApiHelper.getWithHeaders(
-    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/tasks/${data.taskId}/logs`,
+    `${import.meta.env.VITE_REACT_PROJECT_SERVICE_API_URL}/tasks/${data.taskId}/logs${query}`,
     headers,
   );
 };

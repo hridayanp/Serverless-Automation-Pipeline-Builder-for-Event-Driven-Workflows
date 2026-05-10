@@ -122,6 +122,7 @@ export const fetchLogs = async ({ workflow_id }) => {
           start_date: tl.start_date,
           end_date: tl.end_date,
           status: tl.status,
+          log_file_s3_key: tl.log_file_s3_key || task?.log_file_s3_key,
         };
       });
 

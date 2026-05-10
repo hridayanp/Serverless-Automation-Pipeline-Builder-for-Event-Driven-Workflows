@@ -175,10 +175,10 @@ export default function JobDetailsPage() {
   }, [taskLogs, job, workflowStatus, workflowBadgeClass]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const viewTaskLogs = async (taskId: string) => {
+  const viewTaskLogs = async (taskId: string, logKey?: string) => {
     try {
       setFetchingLogs(true);
-      const res: any = await getTaskLogs({ taskId });
+      const res: any = await getTaskLogs({ taskId, log_key: logKey });
       const logs = res?.data?.data?.log_file_base64;
       if (logs) {
         setSelectedTaskLogs(atob(logs));
@@ -241,7 +241,7 @@ export default function JobDetailsPage() {
         
         return (
           <button
-            onClick={() => viewTaskLogs(row.original.task_id || taskId)}
+            onClick={() => viewTaskLogs(row.original.task_id || taskId, row.original.log_file_s3_key)}
             className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline group"
           >
             <FileText className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
