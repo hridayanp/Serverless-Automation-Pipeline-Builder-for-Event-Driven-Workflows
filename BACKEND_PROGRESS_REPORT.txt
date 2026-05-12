@@ -1,0 +1,87 @@
+================================================================================
+BACKEND PROGRESS REPORT: SERVERLESS AUTOMATION PIPELINE BUILDER
+================================================================================
+
+PROJECT TITLE: Serverless Automation Pipeline Builder for Event-Driven Workflows
+DOCUMENT TYPE: Technical Progress Report / Backend Specification
+VERSION: 1.0.0
+DATE: May 12, 2026
+
+--------------------------------------------------------------------------------
+1. BACKEND OVERVIEW
+--------------------------------------------------------------------------------
+The backend of the Serverless Automation Pipeline Builder is a distributed, 
+event-driven system designed to manage the lifecycle of automation tasks and 
+orchestrate complex execution workflows. It is built entirely on AWS 
+Serverless infrastructure, ensuring infinite scalability, high availability, 
+and zero-maintenance overhead.
+
+The backend acts as the "Brain" of the system, handling task ingestion, 
+dependency resolution, and recursive execution logic.
+
+--------------------------------------------------------------------------------
+2. ARCHITECTURAL BLUEPRINT
+--------------------------------------------------------------------------------
+
+2.1 MICROSERVICES STRUCTURE
+- Auth Service: Manages user identity, authentication, and security tokens.
+- Project Service: Manages the core entities—Projects, Tasks, Environments, 
+  and Workflows.
+
+2.2 SERVERLESS ECOSYSTEM (AWS)
+- Computation: AWS Lambda (Node.js 22.x and Python 3.12).
+- API Layer: AWS API Gateway (HTTP APIs for low latency).
+- Database: Amazon DynamoDB (NoSQL for high-throughput state tracking).
+- Storage: Amazon S3 (For executable scripts and persistent log files).
+- Security: Amazon Cognito (User Pools and JWT-based authorization).
+
+--------------------------------------------------------------------------------
+3. CORE SERVERLESS CAPABILITIES
+--------------------------------------------------------------------------------
+
+3.1 ASYNCHRONOUS WORKFLOW ORCHESTRATION
+The system implements a custom execution engine that manages recursive 
+task execution. Unlike traditional cron jobs, this engine supports complex 
+branching (success/failure paths) and real-time state updates.
+
+3.2 ISOLATED TASK EXECUTION
+Every task defined by the user is executed in a strictly isolated environment. 
+The system dynamically pulls scripts from S3, resolves dependencies at runtime, 
+and executes the code within a secure Lambda sandbox.
+
+3.3 LOG AGGREGATION & TELEMETRY
+The backend implements a dual-layer logging strategy:
+- Metadata Logging: DynamoDB tracks the status and duration of every task.
+- Deep Logging: Detailed STDOUT and STDERR streams are captured and 
+  persisted in S3 for forensic analysis.
+
+--------------------------------------------------------------------------------
+4. METHODOLOGY
+--------------------------------------------------------------------------------
+
+4.1 INFRASTRUCTURE AS CODE (IaC)
+The entire infrastructure is defined and deployed using the Serverless 
+Framework. This ensures environmental parity between development and 
+production and allows for version-controlled infrastructure updates.
+
+4.2 EVENT-DRIVEN DESIGN
+The system leverages internal Lambda-to-Lambda invocations. When a workflow 
+is triggered, the orchestrator manages the lifecycle by invoking the 
+appropriate runner based on the task's runtime requirements.
+
+4.3 ATOMIC STATE MANAGEMENT
+To support real-time monitoring on the frontend, the backend uses DynamoDB 
+atomic updates (e.g., `list_append`) to stream execution progress without 
+overwriting concurrent state changes.
+
+--------------------------------------------------------------------------------
+5. CONCLUSION
+--------------------------------------------------------------------------------
+The backend implementation successfully demonstrates the power of serverless 
+architectures for complex automation. By decoupling the orchestration logic 
+from the execution environment, the system provides a robust, scalable, 
+and secure platform for enterprise-grade event-driven workflows.
+
+================================================================================
+END OF REPORT
+================================================================================

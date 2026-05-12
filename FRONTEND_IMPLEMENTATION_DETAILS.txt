@@ -1,0 +1,148 @@
+================================================================================
+FRONTEND IMPLEMENTATION DETAILS: SERVERLESS AUTOMATION PIPELINE BUILDER
+================================================================================
+
+DOCUMENT TYPE: Technical Implementation Specification
+VERSION: 1.0.0
+DATE: May 12, 2026
+
+--------------------------------------------------------------------------------
+1. INTRODUCTION
+--------------------------------------------------------------------------------
+This document details the technical implementation of the frontend for the 
+Serverless Automation Pipeline Builder. The system is architected as a 
+Single Page Application (SPA) designed to handle high-complexity data 
+transformations, visual graph editing, and real-time execution monitoring 
+within a serverless ecosystem.
+
+--------------------------------------------------------------------------------
+2. ARCHITECTURAL OVERVIEW
+--------------------------------------------------------------------------------
+
+2.1 CORE DESIGN PATTERNS
+- Component Architecture: Functional React components using the Hooks API 
+  (useState, useEffect, useMemo, useCallback) for optimized rendering.
+- State Management: Redux Toolkit serves as the "Source of Truth." 
+  Redux-Persist is configured with a 'storage' engine to maintain the Redux 
+  store across browser sessions, preventing data loss during navigation.
+- API Interaction Layer: Implemented via Axios with a modular ApiHelper. 
+  It handles:
+  - Global Authorization headers (Bearer tokens).
+  - Multi-service base URLs via environment variables.
+  - Standardized JSON error handling and response normalization.
+
+2.2 DATA FLOW
+1. User Action -> 2. Dispatch Action -> 3. Redux Store Update -> 4. UI Update
+Parallel: 1. API Call -> 2. Response Parsing -> 3. Dispatch to Store.
+
+--------------------------------------------------------------------------------
+3. PROJECT MODULE IMPLEMENTATION
+--------------------------------------------------------------------------------
+The Project module is responsible for the high-level grouping of automation 
+tasks and environments.
+
+3.1 DATA SCHEMA & PERSISTENCE
+Projects are identified by a unique UUID. The system supports dynamic 
+meta-data rendering, where table columns are generated at runtime based on 
+the API response keys.
+
+3.2 ENVIRONMENT ABSTRACTION
+- Execution Environments: Each project can have multiple runtime environments 
+  (Python, Node.js).
+- Config Encoding: Configuration files (requirements.txt, etc.) are 
+  Base64-encoded on the backend. The frontend implements a robust decoding 
+  utility using `atob` and URI component mapping to ensure UTF-8 characters 
+  are preserved.
+
+--------------------------------------------------------------------------------
+4. TASK MODULE IMPLEMENTATION
+--------------------------------------------------------------------------------
+Tasks represent individual units of execution (e.g., a specific Python script).
+
+4.1 S3 INTEGRATION
+The frontend manages task scripts by referencing S3 keys. When a task is 
+created or edited, the file reference is sent to the Project Service, which 
+maps it to the appropriate S3 bucket.
+
+4.2 SCRIPT EDITING (MONACO INTEGRATION)
+The system integrates the Monaco Editor (@monaco-editor/react).
+- Feature Set: Syntax highlighting, auto-indentation, and theme synchronization.
+- Implementation: Scripts are fetched from S3 (via the backend), decoded, 
+  and loaded into the editor buffer for real-time modification.
+
+--------------------------------------------------------------------------------
+5. WORKFLOW ASSEMBLY (GRAPH LOGIC)
+--------------------------------------------------------------------------------
+The Workflow module is the most technically complex part of the system, 
+utilizing @xyflow/react for pipeline orchestration.
+
+5.1 NODE TYPES
+- Task Nodes: Represent a single task execution.
+- Trigger Nodes: Represent branching logic (e.g., "On Success" -> Task B).
+
+5.2 GRAPH-TO-TREE TRANSFORMATION
+The frontend implements a recursive algorithm to convert the visual graph into 
+ a hierarchical JSON tree:
+- Algorithm: `buildTree(nodeId)` searches for child edges, identifies 
+  connecting Trigger nodes, and recursively nests the child Task nodes 
+  within a `children` object.
+- Payload Generation: The resulting JSON is a deeply nested object that 
+  describes the entire execution lifecycle, including branch paths and 
+  exit identifiers.
+
+--------------------------------------------------------------------------------
+6. WORKFLOW EXECUTION & RUNTIME MONITORING
+--------------------------------------------------------------------------------
+
+6.1 REAL-TIME POLLING MECHANISM
+For active executions, the JobDetails page implements a polling strategy:
+- Interval: 3000ms.
+- Termination: Polling automatically stops when the `workflow_status` 
+  reaches a terminal state (COMPLETED or FAILED).
+- Implementation: Uses `useRef` to store the interval ID, ensuring clean-up 
+  on component unmount to prevent memory leaks.
+
+6.2 LOG STREAMING & DECODING
+Logs are stored in S3 as Base64 strings.
+- Implementation: The frontend retrieves the log string, decodes it using 
+  `atob()`, and renders it in a virtualized terminal window.
+- Visual Feedback: The terminal viewer applies regex-based styling to 
+  highlight log levels (INFO, ERROR, STDOUT).
+
+--------------------------------------------------------------------------------
+7. SETUP IMPLEMENTATION
+--------------------------------------------------------------------------------
+
+7.1 BUILD PIPELINE (VITE)
+- Port: Configured to run on 3007.
+- Alias: Path aliasing is set up (`@` -> `./src`) to prevent "prop drilling" 
+  and maintain clean import paths.
+- Environment Management: Uses `.env` files for managing VITE_REACT_API_URL, 
+  ensuring environmental parity between local dev and production.
+
+7.2 TYPESCRIPT CONFIGURATION
+- Strict Mode: Enabled to ensure type safety across all API responses.
+- Path Mapping: Coordinated with Vite for consistent module resolution.
+
+--------------------------------------------------------------------------------
+8. USER EXPECTATIONS & UX ENGINEERING
+--------------------------------------------------------------------------------
+- Optimistic UI: The frontend provides immediate visual feedback (toasts, 
+  loaders) while backend operations complete.
+- Error Boundaries: Implemented to prevent application crashes during 
+  unreliable network conditions.
+- Real-time Traceability: Users expect to see exactly which branch was taken 
+  during execution. This is implemented by mapping the `execution_path` 
+  telemetry to the visual timeline in the Job Monitor.
+
+--------------------------------------------------------------------------------
+9. CONCLUSION
+--------------------------------------------------------------------------------
+The implementation of this frontend prioritizes technical robustness and 
+data integrity. By abstracting complex backend operations into an intuitive 
+visual interface, the system provides a professional environment for 
+orchestrating high-scale serverless automation.
+
+================================================================================
+END OF SPECIFICATION
+================================================================================

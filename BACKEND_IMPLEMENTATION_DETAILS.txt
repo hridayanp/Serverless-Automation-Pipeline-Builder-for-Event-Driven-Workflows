@@ -1,0 +1,109 @@
+================================================================================
+BACKEND IMPLEMENTATION DETAILS: SERVERLESS AUTOMATION PIELINE BUILDER
+================================================================================
+
+DOCUMENT TYPE: Technical Implementation Specification
+VERSION: 1.0.0
+DATE: May 12, 2026
+
+--------------------------------------------------------------------------------
+1. INTRODUCTION
+--------------------------------------------------------------------------------
+The backend implementation is centered around the "Orchestrator-Worker" pattern 
+implemented via AWS Lambda. This document describes exactly how the serverless 
+components interact to execute arbitrary user code in a controlled, scalable 
+environment.
+
+--------------------------------------------------------------------------------
+2. SERVERLESS ORCHESTRATION: HOW IT WORKS EXACTLY
+--------------------------------------------------------------------------------
+
+2.1 THE WORKFLOW EXECUTOR (ORCHESTRATOR)
+The `workflowExecutor` is a Node.js Lambda function that acts as the state 
+machine.
+- Recursive Logic: When triggered, it receives a hierarchical JSON tree of 
+  tasks. It uses a recursive `runNode` function to process the current task 
+  and determine the next branch.
+- Decision Making: Based on the `success` or `failure` result of a worker, 
+  it traverses the tree to find the next node under `on_success` or 
+  `on_failure`.
+- State Tracking: It performs incremental updates to DynamoDB using the 
+  `list_append` operation. This allows the frontend to see the "Execution Path" 
+  grow in real-time as tasks complete.
+
+2.2 THE PYTHON TASK RUNNER (WORKER)
+The `pythonTaskRunner` is a specialized Python 3.12 Lambda function that 
+executes user scripts.
+- Execution Isolation: 
+  1. For every execution, it creates a unique subdirectory in `/tmp` using 
+     `uuid.uuid4()`.
+  2. It downloads the user script from S3 into this directory.
+- Dynamic Dependency Management: 
+  1. If the task has specific requirements, it runs `pip install -t /tmp/libs` 
+     to install dependencies into the local execution folder.
+  2. It updates the `sys.path` (or `PYTHONPATH` env var) to include this 
+     folder, allowing the user script to import libraries without 
+     pre-installed layers.
+- Result Capture: It uses the `subprocess` module to run the script, 
+  capturing all output (STDOUT/STDERR) and the exit code.
+
+--------------------------------------------------------------------------------
+3. DATA PERSISTENCE & STORAGE STRATEGY
+--------------------------------------------------------------------------------
+
+3.1 DYNAMODB SCHEMA DESIGN
+The system uses multiple tables optimized for serverless access:
+- TABLE_WORKFLOW_LOGS: Uses `run_id` as the HASH key. Stores the global 
+  status, start/end times, and the `execution_path` list.
+- TABLE_WORKFLOW_TASK_LOGS: Uses `run_id` as HASH and `task_id` as RANGE. 
+  This allows for efficient querying of all task attempts for a specific 
+  workflow run.
+
+3.2 S3 BUCKET HIERARCHY
+S3 is used as a highly durable script and log repository:
+- `tasks/{taskId}/script.py`: Stores the latest version of the user script.
+- `tasks/{taskId}/task.log`: Stores the full execution telemetry (PIPELINE, 
+  STDOUT, STDERR) for the last run.
+
+--------------------------------------------------------------------------------
+4. SECURITY & AUTHORIZATION
+--------------------------------------------------------------------------------
+- Identity Management: AWS Cognito handles user registration and login.
+- JWT Validation: The API Gateway uses a JWT Authorizer linked to the Cognito 
+  User Pool. Every request must carry a valid ID Token in the Authorization 
+  header.
+- IAM Least Privilege: Lambda roles are strictly scoped. For example, the 
+  `pythonTaskRunner` has S3:GetObject permissions only for the task bucket 
+  and DynamoDB:UpdateItem only for the task logs table.
+
+--------------------------------------------------------------------------------
+5. INFRASTRUCTURE CONFIGURATION (IaC)
+--------------------------------------------------------------------------------
+The `serverless.yml` file defines the entire stack:
+- Memory/Timeout Tuning: Orchestrator and Runners are configured with 900s 
+  (15 min) timeouts—the maximum allowed by AWS Lambda—to support 
+  long-running tasks.
+- Resource Provisioning: Automatically creates the DynamoDB tables and S3 
+  buckets with the `PAY_PER_REQUEST` billing mode, ensuring the system costs 
+  $0 when not in use.
+
+--------------------------------------------------------------------------------
+6. EXECUTION TELEMETRY FLOW
+--------------------------------------------------------------------------------
+1. `executeWorkflow` (API) -> 2. Inserts Initial Log (DynamoDB) -> 
+3. Invokes `workflowExecutor` (Async) -> 4. `workflowExecutor` invokes 
+`pythonTaskRunner` (Sync) -> 5. `pythonTaskRunner` updates Task Log 
+(DynamoDB) & Uploads Output (S3) -> 6. `workflowExecutor` updates 
+Execution Path (DynamoDB) and decides next step.
+
+--------------------------------------------------------------------------------
+7. CONCLUSION
+--------------------------------------------------------------------------------
+The implementation achieves a high degree of execution safety and 
+observability by leveraging the native capabilities of AWS Lambda and S3. 
+The dynamic dependency injection and recursive orchestration logic provide a 
+powerful framework for scalable serverless automation.
+
+================================================================================
+END OF SPECIFICATION
+================================================================================

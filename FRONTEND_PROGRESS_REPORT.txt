@@ -1,0 +1,125 @@
+================================================================================
+FRONTEND PROGRESS REPORT: SERVERLESS AUTOMATION PIPELINE BUILDER
+================================================================================
+
+PROJECT TITLE: Serverless Automation Pipeline Builder for Event-Driven Workflows
+DOCUMENT TYPE: Technical Progress Report / SRS (Frontend Specification)
+VERSION: 1.0.0
+DATE: May 12, 2026
+
+--------------------------------------------------------------------------------
+1. PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+The Serverless Automation Pipeline Builder is a sophisticated web-based platform 
+designed to orchestrate, manage, and monitor event-driven serverless workflows. 
+The frontend serves as the primary interface for developers and system 
+administrators to define complex task dependencies, manage project environments, 
+and observe execution telemetry in real-time.
+
+The application bridges the gap between high-level logic design and low-level 
+serverless execution by providing a visual drag-and-drop interface for 
+workflow creation.
+
+--------------------------------------------------------------------------------
+2. SYSTEM ARCHITECTURE (FRONTEND)
+--------------------------------------------------------------------------------
+The frontend is built on a modern, scalable, and type-safe stack, ensuring high 
+performance and maintainability.
+
+2.1 CORE TECHNOLOGY STACK
+- Framework: React 19 (Functional Components, Hooks API)
+- Language: TypeScript (Strict typing for robust development)
+- Build System: Vite (Optimized HMR and production bundling)
+- Routing: React Router DOM v7 (Client-side navigation with route guards)
+
+2.2 STATE MANAGEMENT
+- Primary Engine: Redux Toolkit
+- Architecture: Sliced-based state management (User, Workflow, Connector, Field)
+- Persistence: Redux Persist (Local storage synchronization for session stability)
+
+2.3 STYLING AND UI/UX
+- CSS Engine: Tailwind CSS v4 (Utility-first styling)
+- Component Library: Radix UI / Shadcn UI (Headless, accessible UI primitives)
+- Iconography: Lucide React
+- Design Philosophy: Modern "Glassmorphism" and Dark Mode aesthetics for a 
+  premium professional feel.
+
+--------------------------------------------------------------------------------
+3. CORE FUNCTIONAL MODULES
+--------------------------------------------------------------------------------
+
+3.1 WORKFLOW ORCHESTRATOR (VISUAL BUILDER)
+- Technology: @xyflow/react (formerly React Flow)
+- Functionality: Allows users to build recursive tree-based workflows.
+- Logic: Implements "Task" nodes and "Trigger" nodes. Task nodes represent 
+  execution units (e.g., Python scripts, AWS Lambdas), while Trigger nodes 
+  represent conditional branching (Success, Failure, Exit Codes).
+- Methodology: Utilizes a recursive tree-building algorithm to transform 
+  graphical node positions and edges into a hierarchical JSON payload 
+  compatible with the backend execution engine.
+
+3.2 PROJECT & TASK MANAGEMENT
+- Project Wizard: A multi-step form process for initializing automation projects.
+- Environment Management: Dedicated interfaces for managing secrets, variables, 
+  and runtime configurations.
+- Task Repository: Centralized management of executable units across different 
+  projects.
+
+3.3 JOB MONITORING & LOGGING
+- Real-time Status: Pipeline status bars and sequence bars for tracking 
+  execution progress.
+- Log Streaming: Integration with backend S3/CloudWatch logs to surface 
+  execution telemetry directly in the browser.
+- Data Visualization: Recharts-based time-series analysis for monitoring 
+  task performance and resource consumption.
+
+3.4 CODE INTEGRATION
+- Editor: Integrated Monaco Editor (VS Code core) for editing task scripts 
+  directly within the browser, supporting syntax highlighting and IntelliSense.
+
+--------------------------------------------------------------------------------
+4. METHODOLOGY AND DEVELOPMENT PATTERNS
+--------------------------------------------------------------------------------
+
+4.1 COMPONENT-DRIVEN DEVELOPMENT (CDD)
+The project follows an Atomic Design methodology. Components are divided into:
+- Atoms/UI: Buttons, Inputs, Labels (located in /components/ui).
+- Molecules: Forms, Table Headers, SideBar items.
+- Organisms: Workflow Builder, Project Wizard, Dashboard Grids.
+
+4.2 API INTEGRATION PATTERN
+- Helper Layer: ApiHelper.tsx abstracts Axios requests, handling headers, 
+  tokens, and error responses globally.
+- Service Layer: ApiService.tsx defines clean, promise-based interfaces for 
+  backend microservices (Auth, Project, User services).
+- Security: Implements JWT-based authentication with automated interceptors 
+  for Bearer token injection.
+
+4.3 DATA VALIDATION
+- Schema Validation: Zod is used for client-side form validation, ensuring 
+  data integrity before API submission.
+- Form Handling: React Hook Form provides high-performance, non-re-rendering 
+  form state management.
+
+--------------------------------------------------------------------------------
+5. SECURITY AND ACCESSIBILITY
+--------------------------------------------------------------------------------
+- Authentication: Secure login/signup flows with OTP (One-Time Password) 
+  verification.
+- Authorization: Protected route wrappers prevent unauthorized access to 
+  dashboard and management pages.
+- Accessibility: Adherence to WAI-ARIA standards through Radix UI primitives.
+
+--------------------------------------------------------------------------------
+6. CONCLUSION
+--------------------------------------------------------------------------------
+The frontend of the Serverless Automation Pipeline Builder is a state-of-the-art 
+implementation of a modern React application. By leveraging visual programming 
+paradigms and a robust micro-service integrated architecture, it provides 
+a professional-grade tool for complex automation orchestration. The current 
+implementation meets the high standards required for both corporate 
+environments and academic thesis submissions.
+
+================================================================================
+END OF REPORT
+================================================================================
