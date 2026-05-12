@@ -1,0 +1,33 @@
+FINAL USERS MANUAL
+Introduction
+This document provides a comprehensive guide for users to successfully initialize and execute the Serverless Automation Pipeline Builder on a local environment. The system is powered by the AWS Serverless Protocol and its modular software armaments. To ensure that the application operates as intended, the user must have access to specific libraries and frameworks that provide the necessary runtime and deployment infrastructure. The following sections detail the prerequisites and the step wise operational sequence required to launch the project.
+
+System Prerequisites
+For a user to successfully run this application, they must ensure that the following libraries and frameworks are available on their local system:
+
+a. Node.js Environment: This is the primary development environment and asset pipeline for the frontend and the orchestration backend. It allows for the management of project dependencies and the execution of the application logic within the browser and serverless runtimes.
+
+b. Python Runtime: Since the system supports the execution of Python based automation tasks, a local Python environment is necessary for developing and testing scripts before they are uploaded to the cloud infrastructure.
+
+c. Serverless Framework: This is a powerful development environment and deployment framework for serverless applications. It enables the configuration, testing, and deployment of AWS Lambda functions, DynamoDB tables, and S3 buckets through a unified command line interface.
+
+d. AWS Command Line Interface: This tool allows users to manage their AWS credentials and interact with cloud services directly from the terminal. It is essential for authorizing the deployment of the backend infrastructure and managing security configurations.
+
+Operational Instructions
+After the aforementioned frameworks are available on the local system, the user can access the source code of the application and execute the following steps to run the project:
+
+1. Execute the npm install command within the frontend, authService, and projectsService directories to install all the dependencies required for the project.
+
+2. Configure the environment variables by creating .env files in each service directory and providing the necessary AWS identifiers such as User Pool IDs and Client Secret keys.
+
+3. Execute the serverless deploy command within the authService and projectsService directories to compile and deploy the backend infrastructure into the AWS cloud environment.
+
+4. Navigate to the frontend directory and execute the npm run dev command to launch the application into the browser.
+
+5. Ensure that the application is correctly connected to the AWS services by verifying that the local environment has the necessary permissions to access the deployed API endpoints and storage buckets.
+
+Execution Verification
+Once the application is running in the browser, the user can verify the installation by creating a test project and configuring a simple task sequence. The frontend interface should provide immediate feedback upon successful project creation, and the backend orchestrator should be capable of executing the workflow and reporting status updates through the dashboard. This confirms that the local setup is correctly synchronized with the serverless infrastructure and is ready for professional automation tasks.
+
+Conclusion
+This manual provides the essential steps to transform the source code into a functional automation environment. By following the detailed instructions and ensuring all prerequisites are met, the user can leverage the full power of the Serverless Automation Pipeline Builder. The modular design and clear operational sequence ensure that the system remains accessible and reliable for managing complex event driven workflows.
