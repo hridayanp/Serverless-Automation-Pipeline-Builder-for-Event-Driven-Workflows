@@ -28,20 +28,24 @@ export const ConfirmDeleteDialog = ({
 }: ConfirmDeleteDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
+      <AlertDialogContent className="p-0 border-none bg-background overflow-hidden">
+        <div className="bg-primary p-6 rounded-t-xl text-background">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-bold tracking-tight">{title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-background/70 text-sm mt-1">{description}</AlertDialogDescription>
+          </AlertDialogHeader>
+        </div>
+        <div className="p-6 pt-0">
+          <AlertDialogFooter className="pt-6">
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={onConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );

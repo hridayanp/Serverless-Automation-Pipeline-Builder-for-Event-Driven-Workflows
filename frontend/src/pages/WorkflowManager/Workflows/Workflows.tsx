@@ -389,7 +389,7 @@ export default function Workflow() {
         <div className="flex gap-4 items-center justify-center mr-2">
           <button
             onClick={() => handleExecute(row.original)}
-            className="text-primary hover:bg-primary hover:text-white cursor-pointer font-medium text-xs border border-primary px-2 py-1 rounded transition-colors"
+            className="text-primary hover:bg-primary hover:text-primary-foreground cursor-pointer font-medium text-xs border border-primary px-2 py-1 rounded transition-colors"
             title="Run Workflow"
           >
             Run
@@ -522,8 +522,8 @@ export default function Workflow() {
   return (
     <>
       {/* Project selector bar */}
-      <div className="bg-[#fdfdfb] px-6 lg:px-8 py-4 max-w-[1600px] mx-auto border-b border-neutral-200/60">
-        <div className="bg-white border border-neutral-100 rounded-xl shadow-sm px-5 py-3 flex items-center gap-4 flex-wrap">
+      <div className="bg-background px-6 lg:px-8 py-4 max-w-[1600px] mx-auto border-b border-border overflow-x-hidden">
+        <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-4 flex-wrap">
           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Project
           </span>

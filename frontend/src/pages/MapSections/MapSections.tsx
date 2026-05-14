@@ -33,7 +33,7 @@ const MapSections = () => {
         {isFieldsLoading ? (
           <div className="mt-6">Loading...</div>
         ) : (
-          <div className="mt-4 space-y-4 overflow-auto flex-grow h-[calc(100vh-517px)] thin-scrollbar pr-2">
+          <div className="mt-4 space-y-4 overflow-auto flex-grow h-[calc(100vh-517px)] thin-scrollbar border-border pr-2">
             {fieldsListData.length > 0 ? (
               fieldsListData.map((field: any) => (
                 <FieldCard
@@ -44,7 +44,7 @@ const MapSections = () => {
                 />
               ))
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-500 text-lg">
+              <div className="flex items-center justify-center h-full text-foreground/50 text-lg">
                 No fields data found.
               </div>
             )}
@@ -54,7 +54,7 @@ const MapSections = () => {
 
       {/* Main Content */}
       <div className="w-full flex flex-col h-full overflow-hidden p-6">
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <h1 className="text-2xl font-semibold text-foreground">
           Main Section Placeholder
         </h1>
       </div>

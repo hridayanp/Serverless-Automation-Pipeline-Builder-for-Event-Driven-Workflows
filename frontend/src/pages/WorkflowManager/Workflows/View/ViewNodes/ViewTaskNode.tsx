@@ -6,7 +6,7 @@ import { Handle, Position } from '@xyflow/react';
 export default function ViewTaskNode({ data }: any) {
   return (
     <div className="relative w-96">
-      <div className="bg-white border shadow-md rounded-xl p-5 flex flex-col gap-2 relative">
+      <div className="bg-card border border-border shadow-md rounded-xl p-5 flex flex-col gap-2 relative">
         {/* Incoming Handle */}
         <Handle
           type="target"
@@ -16,7 +16,7 @@ export default function ViewTaskNode({ data }: any) {
 
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h2 className="font-semibold text-sm text-gray-800">Task</h2>
+          <h2 className="font-semibold text-sm text-foreground">Task</h2>
         </div>
 
         {/* Task ID */}

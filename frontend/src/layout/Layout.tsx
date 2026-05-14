@@ -15,10 +15,10 @@ import {
 import { AppSidebar } from './app-sidebar';
 import { Button } from '@/components/ui/button';
 import { PanelLeft } from 'lucide-react';
+import { ModeToggle } from '@/components/ModeToggle';
 
 /* ── palette tokens (shared across sidebar / header / dashboard) ────────── */
 // const BRAND = '#1a2c20';
-const LIGHT = '#f7f8f5';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -80,49 +80,44 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-screen overflow-hidden" style={{ backgroundColor: LIGHT }}>
+      <div className="flex h-screen w-screen overflow-hidden bg-background">
         {/* Sidebar */}
-        <Sidebar className="border-r" style={{ borderColor: '#e8ede9' }}>
-          <div className="h-16 px-6 flex items-center border-b" style={{ borderColor: '#e8ede9' }}>
-            <img src={misteoLogo} alt="Logo" className="h-6" />
+        <Sidebar className="border-r border-border">
+          <div className="h-16 px-6 flex items-center border-b border-border">
+            <img src={misteoLogo} alt="Logo" className="h-6 dark:invert" />
           </div>
           <AppSidebar />
         </Sidebar>
 
         {/* Sidebar Inset (Layout Shell) */}
-        <SidebarInset style={{ backgroundColor: LIGHT }}>
+        <SidebarInset className="bg-background">
 
           {/* ── Header — matches sidebar design language ─────────────── */}
           <header
-            className="sticky top-0 z-10 flex h-16 items-center justify-between px-5 shrink-0"
-            style={{
-              backgroundColor: '#ffffff',
-              borderBottom: '1px solid #e8ede9',
-            }}
+            className="sticky top-0 z-10 flex h-16 items-center justify-between px-5 shrink-0 bg-background border-b border-border"
           >
             {/* left: trigger + divider + logo */}
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="-ml-1 flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150 text-muted-foreground hover:bg-[#d4edda] hover:text-[#1a2c20]">
-  <PanelLeft className="w-4 h-4.5" strokeWidth={2.2} />
-</SidebarTrigger>
+              <SidebarTrigger className="-ml-1 flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150 text-muted-foreground hover:bg-accent hover:text-accent-foreground">
+                <PanelLeft className="w-4 h-4.5" strokeWidth={2.2} />
+              </SidebarTrigger>
 
-              <div className="h-4 w-px" style={{ backgroundColor: '#e8ede9' }} />
-
-              
+              <div className="h-4 w-px bg-border" />
             </div>
 
             {/* right: live status pill — mirrors dashboard + sidebar bottom pill */}
-            <div
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
-              style={{ backgroundColor: '#f0faf3', borderColor: '#c8e6c9' }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span
-                className="text-[10px] font-black uppercase tracking-[0.2em]"
-                style={{ color: '#2d5a3d' }}
+            <div className="flex items-center gap-3">
+              <ModeToggle />
+              <div
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-emerald-500/10 border-emerald-500/20"
               >
-                Live
-              </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span
+                  className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400"
+                >
+                  Live
+                </span>
+              </div>
             </div>
           </header>
 

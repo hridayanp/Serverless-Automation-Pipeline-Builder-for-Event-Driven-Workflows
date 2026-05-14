@@ -27,9 +27,9 @@ import {
 } from '@/components/ui/sidebar';
 
 /* ── palette tokens (mirror the dashboard) ─────────────────────────────── */
-const BRAND   = '#1a2c20';   // deep forest
-const LIGHT   = '#f7f8f5';   // page bg
-const ACCENT  = '#d4edda';   // emerald tint
+// const BRAND   = '#1a2c20';   // deep forest
+// const LIGHT   = '#f7f8f5';   // page bg
+// const ACCENT  = '#d4edda';   // emerald tint
 
 const navMain = [
   { title: 'Dashboard', url: '/dashboard',         icon: LayoutDashboard },
@@ -60,29 +60,16 @@ function NavItem({
   const inner = (
     <div
       onClick={onClick}
-      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 relative"
-      style={{
-        backgroundColor: active ? BRAND    : 'transparent',
-        color:           active ? '#fff'   : `${BRAND}99`,
-      }}
-      onMouseEnter={(e) => {
-        if (!active) {
-          (e.currentTarget as HTMLDivElement).style.backgroundColor = ACCENT;
-          (e.currentTarget as HTMLDivElement).style.color = BRAND;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!active) {
-          (e.currentTarget as HTMLDivElement).style.backgroundColor = 'transparent';
-          (e.currentTarget as HTMLDivElement).style.color = `${BRAND}99`;
-        }
-      }}
+      className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 relative ${
+        active 
+          ? 'bg-primary text-primary-foreground' 
+          : 'bg-transparent text-foreground/70 hover:bg-accent hover:text-accent-foreground'
+      }`}
     >
       {/* active pill */}
       {active && (
         <span
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full"
-          style={{ backgroundColor: '#a8d5b5' }}
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full bg-primary-foreground/50"
         />
       )}
 
@@ -93,7 +80,6 @@ function NavItem({
 
       <span
         className="text-[13px] font-bold tracking-wide truncate flex-1"
-        style={{ fontVariant: 'normal' }}
       >
         {item.title}
       </span>
@@ -122,38 +108,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar
       {...props}
       collapsible="icon"
-      style={
-        {
-          '--sidebar-background': '#ffffff',
-          '--sidebar-foreground': BRAND,
-          '--sidebar-border':     '#e8ede9',
-          borderRight: '1px solid #e8ede9',
-        } as React.CSSProperties
-      }
+      className="border-r border-border"
     >
       {/* ── Logo / Brand ───────────────────────────────────────────────── */}
-      <SidebarHeader className="px-4 py-4 border-b border-[#e8ede9]">
+      <SidebarHeader className="px-4 py-4 border-b border-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <Link to="#" className="flex items-center gap-3 no-underline">
               {/* icon square — same accent palette as stat cards */}
               <div
-                className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0"
-                style={{ backgroundColor: BRAND }}
+                className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0 bg-primary"
               >
-                <GalleryVerticalEnd className="w-4 h-4 text-white" strokeWidth={2.2} />
+                <GalleryVerticalEnd className="w-4 h-4 text-primary-foreground" strokeWidth={2.2} />
               </div>
 
               <div className="flex flex-col leading-none gap-0.5">
                 <span
-                  className="text-[15px] font-black tracking-tight"
-                  style={{ color: BRAND }}
+                  className="text-[15px] font-black tracking-tight text-foreground"
                 >
                   Dataflow
                 </span>
                 <span
-                  className="text-[9px] font-bold uppercase tracking-[0.2em]"
-                  style={{ color: `${BRAND}50` }}
+                  className="text-[9px] font-bold uppercase tracking-[0.2em] text-foreground/50"
                 >
                   v1.0.0
                 </span>
@@ -168,8 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup className="px-3">
           {/* section label */}
           <p
-            className="text-[9px] font-black uppercase tracking-[0.28em] mb-3 px-3"
-            style={{ color: `${BRAND}40` }}
+            className="text-[9px] font-black uppercase tracking-[0.28em] mb-3 px-3 text-foreground/40"
           >
             Navigation
           </p>
@@ -184,13 +159,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
 
         {/* ── Divider ──────────────────────────────────────────────────── */}
-        <div className="mx-6 my-5 h-px" style={{ backgroundColor: '#e8ede9' }} />
+        <div className="mx-6 my-5 h-px bg-border" />
 
         {/* ── Secondary nav ────────────────────────────────────────────── */}
         <SidebarGroup className="px-3 mt-auto mb-3">
           <p
-            className="text-[9px] font-black uppercase tracking-[0.28em] mb-3 px-3"
-            style={{ color: `${BRAND}40` }}
+            className="text-[9px] font-black uppercase tracking-[0.28em] mb-3 px-3 text-foreground/40"
           >
             Account
           </p>
@@ -216,15 +190,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
 
         {/* ── Status pill at the very bottom ───────────────────────────── */}
-        <div className="mx-4 mb-5 px-3 py-2.5 rounded-xl flex items-center gap-2.5"
-          style={{ backgroundColor: LIGHT }}>
+        <div className="mx-4 mb-5 px-3 py-2.5 rounded-xl flex items-center gap-2.5 bg-muted">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
           <div className="flex flex-col leading-none gap-0.5">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em]"
-              style={{ color: `${BRAND}50` }}>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/50">
               System Status
             </span>
-            <span className="text-[11px] font-bold" style={{ color: BRAND }}>
+            <span className="text-[11px] font-bold text-foreground">
               All Systems Operational
             </span>
           </div>

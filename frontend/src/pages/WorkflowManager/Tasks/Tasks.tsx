@@ -289,8 +289,8 @@ export default function Tasks() {
 
   const renderTaskDetailsTab = (task: Task) => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="bg-white rounded-xl shadow-md border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border bg-white flex items-center gap-3">
+      <div className="bg-card rounded-xl shadow-md border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border bg-card flex items-center gap-3">
           <div className="p-2 bg-primary/5 rounded-lg border border-primary/10">
             <ClipboardList className="w-5 h-5 text-primary" />
           </div>
@@ -302,7 +302,7 @@ export default function Tasks() {
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                 {formatLabel(key)}
               </span>
-              <span className="text-sm text-gray-900 break-words">
+              <span className="text-sm text-foreground break-words">
                 {value !== null && value !== '' ? String(value) : '-'}
               </span>
             </div>
@@ -325,7 +325,7 @@ export default function Tasks() {
         ].map((item, i) => (
           <div
             key={i}
-            className="bg-white p-4 rounded-xl border border-border shadow-sm flex items-center gap-3"
+            className="bg-card p-4 rounded-xl border border-border shadow-sm flex items-center gap-3"
           >
             <div className="p-2 bg-secondary/5 rounded-lg text-secondary">
               <item.icon className="w-4 h-4" />
@@ -384,8 +384,8 @@ export default function Tasks() {
   return (
     <>
       {/* Project selector bar — rendered above the PageLayout */}
-      <div className="bg-[#fdfdfb] px-6 lg:px-8 py-4 max-w-[1600px] mx-auto border-b border-neutral-200/60">
-        <div className="bg-white border border-neutral-100 rounded-xl shadow-sm px-5 py-3 flex items-center gap-4 flex-wrap">
+      <div className="bg-background px-6 lg:px-8 py-4 max-w-[1600px] mx-auto border-b border-border">
+        <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-4 flex-wrap">
           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Project
           </span>

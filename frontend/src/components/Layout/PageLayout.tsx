@@ -269,7 +269,7 @@ function StatBar({ stats, data }: { stats: StatConfig[]; data: any[] }) {
       {stats.map((stat, i) => (
         <div
           key={i}
-          className="bg-white p-5 rounded-xl border border-neutral-100 shadow-sm flex items-center gap-4"
+          className="bg-card p-5 rounded-xl border border-border shadow-sm flex items-center gap-4"
         >
           <div
             className={`p-2.5 rounded-lg bg-${stat.color ?? 'primary'}/5 text-${stat.color ?? 'primary'}`}
@@ -280,7 +280,7 @@ function StatBar({ stats, data }: { stats: StatConfig[]; data: any[] }) {
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">
               {stat.label}
             </p>
-            <p className="text-xl font-bold text-[#1a2c20]">
+            <p className="text-xl font-bold text-foreground">
               {stat.getValue(data)}
             </p>
           </div>
@@ -331,7 +331,7 @@ function CardGrid<T extends { id?: any }>({
         return (
           <div
             key={(item as any).id ?? idx}
-            className="bg-white rounded-xl border border-neutral-100 p-6 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group flex flex-col justify-between min-h-[220px]"
+            className="bg-card rounded-xl border border-border p-6 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group flex flex-col justify-between min-h-[220px]"
           >
             <div className="space-y-4">
               {/* Header */}
@@ -342,7 +342,7 @@ function CardGrid<T extends { id?: any }>({
                       {subtitle}
                     </span>
                   )}
-                  <h3 className="text-lg font-bold text-[#1a2c20] group-hover:text-primary transition-colors truncate">
+                  <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors truncate">
                     {title}
                   </h3>
                 </div>
@@ -421,13 +421,13 @@ function CardGrid<T extends { id?: any }>({
       {onAddNew && (
         <div
           onClick={onAddNew}
-          className="border-2 border-dashed border-neutral-100 rounded-xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/30 hover:bg-primary/[0.02] transition-all group min-h-[220px]"
+          className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/30 hover:bg-primary/[0.02] transition-all group min-h-[220px]"
         >
-          <div className="w-10 h-10 rounded-lg bg-neutral-50 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
-            <Plus className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-lg bg-neutral-50 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-inner">
+            <Plus className="w-5 h-5 dark:text-black" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-bold text-[#1a2c20]">{addNewLabel}</p>
+            <p className="text-sm font-bold text-foreground">{addNewLabel}</p>
             <p className="text-[10px] text-muted-foreground font-medium">
               Click to get started
             </p>
@@ -450,12 +450,12 @@ function EmptyState({
   addLabel?: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 gap-5 bg-white rounded-xl border-2 border-dashed border-neutral-100">
+    <div className="flex flex-col items-center justify-center py-24 gap-5 bg-card rounded-xl border-2 border-dashed border-border">
       <div className="w-14 h-14 rounded-xl bg-neutral-50 flex items-center justify-center shadow-inner">
-        <Plus className="w-6 h-6 text-muted-foreground/40" />
+        <Plus className="w-6 h-6 text-muted-foreground/40 dark:text-black" />
       </div>
       <div className="text-center space-y-1">
-        <h3 className="text-base font-bold text-[#1a2c20]">No {label} yet</h3>
+        <h3 className="text-base font-bold text-foreground">No {label} yet</h3>
         <p className="text-xs text-muted-foreground max-w-xs">
           Get started by creating your first{' '}
           {label.toLowerCase().replace(/s$/, '')}.
@@ -464,9 +464,9 @@ function EmptyState({
       {onAdd && (
         <Button
           onClick={onAdd}
-          className="rounded-xl bg-primary hover:bg-primary/90 shadow-md shadow-primary/10 font-bold text-xs uppercase tracking-widest px-5"
+          className="rounded-xl bg-primary hover:bg-primary/90 shadow-md shadow-primary/10 font-bold text-xs uppercase tracking-widest px-5 text-primary-foreground"
         >
-          <Plus className="mr-2 h-4 w-4" /> {addLabel ?? `New ${label}`}
+          <Plus className="mr-2 h-4 w-4 dark:text-black" /> {addLabel ?? `New ${label}`}
         </Button>
       )}
     </div>
@@ -565,13 +565,13 @@ export function PageLayout<T extends { id?: any } = any>({
 
   return (
     <div
-      className={`min-h-screen bg-[#fdfdfb] p-6 lg:p-8 space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500 ${className}`}
+      className={`min-h-screen bg-background p-6 lg:p-8 space-y-8 max-w-[1600px] mx-auto overflow-x-hidden animate-in fade-in duration-500 ${className}`}
     >
       {/* ── Header ── */}
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight text-[#1a2c20]">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               {title}
             </h1>
             {subtitle && (
@@ -596,9 +596,9 @@ export function PageLayout<T extends { id?: any } = any>({
                     )}
                     <Button
                       onClick={action.onClick}
-                      className="rounded-xl bg-primary hover:bg-primary/90 shadow-md shadow-primary/10 font-bold text-xs uppercase tracking-widest px-5"
+                      className="rounded-xl bg-primary hover:bg-primary/90 shadow-md shadow-primary/10 font-bold text-xs uppercase tracking-widest px-5 text-primary-foreground"
                     >
-                      {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+                      {action.icon && <action.icon className="mr-2 h-4 w-4 dark:text-black" />}
                       {action.label}
                     </Button>
                   </React.Fragment>
@@ -611,7 +611,7 @@ export function PageLayout<T extends { id?: any } = any>({
       </div>
 
       {/* ── Main Content ── */}
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full overflow-x-hidden">
         {isEmpty ? (
           <EmptyState
             label={title}
@@ -619,7 +619,7 @@ export function PageLayout<T extends { id?: any } = any>({
             addLabel={primaryAction?.label}
           />
         ) : viewMode === 'table' ? (
-          <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-2 overflow-hidden">
+          <div className="bg-card rounded-xl border border-border shadow-sm p-2 overflow-hidden w-full max-w-full">
             <DataTable
               pagination
               toolbar
@@ -638,7 +638,7 @@ export function PageLayout<T extends { id?: any } = any>({
           />
         ) : (
           /* Fallback: no cardConfig provided → show table anyway */
-          <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-2 overflow-hidden">
+          <div className="bg-card rounded-xl border border-border shadow-sm p-2 overflow-hidden">
             <DataTable
               pagination
               toolbar
@@ -673,12 +673,16 @@ export function PageLayout<T extends { id?: any } = any>({
       {formDialog && (
         <Dialog open={formDialog.open} onOpenChange={formDialog.onOpenChange}>
           <DialogContent
-            className={`${formDialog.maxWidth ?? 'max-w-3xl'} overflow-y-auto max-h-[90vh]`}
+            className={`${formDialog.maxWidth ?? 'max-w-3xl'} overflow-y-auto max-h-[90vh] p-0 border-none bg-background [&>button]:text-background`}
           >
-            <DialogHeader>
-              <DialogTitle>{formDialog.title}</DialogTitle>
-            </DialogHeader>
-            {formDialog.children}
+            <div className="bg-primary p-6 rounded-t-xl text-background">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold tracking-tight">{formDialog.title}</DialogTitle>
+              </DialogHeader>
+            </div>
+            <div className="p-6">
+              {formDialog.children}
+            </div>
           </DialogContent>
         </Dialog>
       )}
@@ -689,24 +693,24 @@ export function PageLayout<T extends { id?: any } = any>({
           open={detailDialog.open ?? detailDialogOpen}
           onOpenChange={detailDialog.onOpenChange ?? setDetailDialogOpen}
         >
-          <DialogContent className="max-w-5xl overflow-y-auto max-h-[90vh] p-0 border-none shadow-2xl bg-background [&>button]:text-white">
+          <DialogContent className="max-w-5xl overflow-y-auto max-h-[90vh] p-0 border-none shadow-2xl bg-background [&>button]:text-background">
             {/* Coloured header */}
             <div
-              className={`text-white p-6 rounded-t-xl ${detailDialog.headerClassName ?? 'bg-primary'}`}
+              className={`text-background p-6 rounded-t-xl ${detailDialog.headerClassName ?? 'bg-primary'}`}
             >
               <DialogHeader>
                 <div className="flex items-center gap-3">
                   {detailDialog.icon && (
-                    <div className="p-2 bg-white/10 rounded-lg">
-                      <detailDialog.icon className="w-6 h-6 text-white" />
+                    <div className="p-2 bg-background/10 rounded-lg">
+                      <detailDialog.icon className="w-6 h-6 text-background" />
                     </div>
                   )}
                   <div>
-                    <DialogTitle className="text-2xl font-bold tracking-tight text-white">
+                    <DialogTitle className="text-2xl font-bold tracking-tight text-background">
                       {detailDialog.title((detailDialogRow ?? selectedRow)!)}
                     </DialogTitle>
                     {detailDialog.subtitle && (
-                      <p className="text-white/70 text-sm mt-1">
+                      <p className="text-background/70 text-sm mt-1">
                         {detailDialog.subtitle(
                           (detailDialogRow ?? selectedRow)!,
                         )}

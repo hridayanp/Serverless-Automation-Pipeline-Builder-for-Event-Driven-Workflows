@@ -9,13 +9,13 @@ interface ViewSwitcherProps {
 
 export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ viewMode, onViewChange }) => {
   return (
-    <div className="bg-white border border-border p-1 rounded-xl flex items-center shadow-sm">
+    <div className="bg-card border border-border p-1 rounded-xl flex items-center shadow-sm">
       <Button 
         variant="ghost"
         size="sm" 
         className={`rounded-lg h-8 px-4 font-bold text-[10px] uppercase tracking-wider transition-all border-none ${
           viewMode === 'card' 
-            ? 'bg-primary text-white shadow-md hover:bg-primary/90 hover:text-white' 
+            ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:text-primary-foreground' 
             : 'text-primary hover:bg-primary/5 hover:text-primary'
         }`}
         onClick={() => onViewChange('card')}
@@ -27,7 +27,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ viewMode, onViewChan
         size="sm" 
         className={`rounded-lg h-8 px-4 font-bold text-[10px] uppercase tracking-wider transition-all border-none ${
           viewMode === 'table' 
-            ? 'bg-primary text-white shadow-md hover:bg-primary/90 hover:text-white' 
+            ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:text-primary-foreground' 
             : 'text-primary hover:bg-primary/5 hover:text-primary'
         }`}
         onClick={() => onViewChange('table')}

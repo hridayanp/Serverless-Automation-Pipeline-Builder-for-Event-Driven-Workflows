@@ -67,8 +67,8 @@ export default function Dashboard() {
         apiData?.status === 'SUCCESS'
           ? apiData.data
           : Array.isArray(apiData)
-          ? apiData
-          : [];
+            ? apiData
+            : [];
       setTasksData(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error('Failed to fetch tasks:', e);
@@ -87,8 +87,8 @@ export default function Dashboard() {
         apiData?.status === 'SUCCESS'
           ? apiData.data
           : Array.isArray(apiData)
-          ? apiData
-          : [];
+            ? apiData
+            : [];
       setWorkflowsData(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error('Failed to fetch workflows:', e);
@@ -107,8 +107,8 @@ export default function Dashboard() {
         apiData?.status === 'SUCCESS'
           ? apiData.data
           : Array.isArray(apiData)
-          ? apiData
-          : [];
+            ? apiData
+            : [];
       setJobsData(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error('Failed to fetch jobs:', e);
@@ -249,18 +249,17 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-[#f7f8f5] p-6 lg:p-10 max-w-[1600px] mx-auto animate-in fade-in duration-500">
-
+    <div className="min-h-screen bg-background p-6 lg:p-10 max-w-[1600px] mx-auto animate-in fade-in duration-500">
       {/* ── Header ── */}
       <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#1a2c20]/40 mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground/40 mb-2">
             Orchestration Console
           </p>
-          <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-[#1a2c20] leading-none">
+          <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-foreground leading-none">
             System Overview
           </h1>
-          <p className="mt-3 text-sm text-[#1a2c20]/50 font-medium max-w-md leading-relaxed">
+          <p className="mt-3 text-sm text-foreground/50 font-medium max-w-md leading-relaxed">
             Your serverless infrastructure at a glance — projects, tasks,
             workflows, and live execution state, all in one place.
           </p>
@@ -273,18 +272,22 @@ export default function Dashboard() {
               Live
             </span>
           </div>
-          <p className="text-lg font-bold text-[#1a2c20] tabular-nums">{timeString}</p>
-          <p className="text-[11px] text-[#1a2c20]/40 font-medium">{dateString}</p>
+          <p className="text-lg font-bold text-foreground tabular-nums">
+            {timeString}
+          </p>
+          <p className="text-[11px] text-foreground/40 font-medium">
+            {dateString}
+          </p>
         </div>
       </div>
 
       {/* ── Divider ── */}
       <div className="flex items-center gap-4 mb-8">
-        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#1a2c20]/30 whitespace-nowrap">
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-foreground/30 whitespace-nowrap">
           Key Metrics
         </p>
-        <div className="flex-1 h-px bg-[#1a2c20]/8" />
-        <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#1a2c20]/30 uppercase tracking-widest">
+        <div className="flex-1 h-px bg-foreground/10" />
+        <div className="flex items-center gap-1.5 text-[10px] font-bold text-foreground/30 uppercase tracking-widest">
           <TrendingUp className="w-3 h-3" />
           <span>4 Signals</span>
         </div>
@@ -296,7 +299,7 @@ export default function Dashboard() {
           <div
             key={i}
             onClick={() => handleCardClick(stat.label)}
-            className="group relative bg-white rounded-2xl border border-neutral-100 p-7 cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-[#1a2c20]/8 hover:-translate-y-0.5 hover:border-[#1a2c20]/15"
+            className="group relative bg-card rounded-2xl border border-border p-7 cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-foreground/10 hover:-translate-y-0.5 hover:border-foreground/20"
           >
             {/* Background accent blob */}
             <div
@@ -318,27 +321,24 @@ export default function Dashboard() {
               </div>
 
               <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
-                <span className="text-[10px] font-bold text-[#1a2c20]/40 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-wider">
                   Explore
                 </span>
                 <ArrowUpRight
-                  className="w-4 h-4 text-[#1a2c20]/40"
+                  className="w-4 h-4 text-foreground/40"
                   strokeWidth={2.5}
                 />
               </div>
             </div>
 
             {/* Label */}
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#1a2c20]/40 mb-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/40 mb-2">
               {stat.label}
             </p>
 
             {/* Value */}
             <div className="flex items-baseline gap-3 mb-4">
-              <span
-                className="text-6xl font-black tracking-tighter leading-none tabular-nums"
-                style={{ color: stat.color }}
-              >
+              <span className="text-6xl font-black tracking-tighter leading-none tabular-nums text-primary">
                 {stat.value}
               </span>
               <div className="flex items-center gap-1 pb-1">
@@ -349,7 +349,7 @@ export default function Dashboard() {
             </div>
 
             {/* Description */}
-            <p className="text-sm text-[#1a2c20]/50 leading-relaxed font-medium">
+            <p className="text-sm text-foreground/50 leading-relaxed font-medium">
               {stat.description}
             </p>
 
@@ -363,7 +363,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Footer note ── */}
-      <p className="mt-8 text-center text-[10px] text-[#1a2c20]/25 font-medium uppercase tracking-widest">
+      <p className="mt-8 text-center text-[10px] text-foreground/25 font-medium uppercase tracking-widest">
         Data reflects the first active project · Click any card to drill down
       </p>
     </div>

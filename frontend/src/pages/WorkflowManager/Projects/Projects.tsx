@@ -295,8 +295,8 @@ export default function ProjectsPage() {
 
   const renderProjectDetailsTab = (project: Project) => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="bg-white rounded-xl shadow-md border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border bg-white flex items-center gap-3">
+      <div className="bg-card rounded-xl shadow-md border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border bg-card flex items-center gap-3">
           <div className="p-2 bg-primary/5 rounded-lg border border-primary/10">
             <Code2 className="w-5 h-5 text-primary" />
           </div>
@@ -323,7 +323,7 @@ export default function ProjectsPage() {
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
             Project Description
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed bg-neutral-50 p-4 rounded-xl border border-neutral-100">
+          <p className="text-sm text-muted-foreground leading-relaxed bg-muted/50 p-4 rounded-xl border border-border">
             {project.description ||
               'No description provided for this orchestration pipeline. This project is configured to handle event-driven workloads with scalable infrastructure.'}
           </p>
@@ -338,7 +338,7 @@ export default function ProjectsPage() {
         ].map((item, i) => (
           <div
             key={i}
-            className="bg-white p-4 rounded-xl border border-border shadow-sm flex items-center gap-3"
+            className="bg-card p-4 rounded-xl border border-border shadow-sm flex items-center gap-3"
           >
             <div className="p-2 bg-secondary/5 rounded-lg text-secondary">
               <item.icon className="w-4 h-4" />
@@ -371,9 +371,9 @@ export default function ProjectsPage() {
           {selectedEnvironments.map((env) => (
             <div
               key={env.id}
-              className="bg-white rounded-xl shadow-md border border-border overflow-hidden hover:shadow-lg transition-shadow"
+              className="bg-card rounded-xl shadow-md border border-border overflow-hidden hover:shadow-lg transition-shadow"
             >
-              <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-white">
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card">
                 <div className="flex items-center gap-3">
                   <Settings2 className="w-5 h-5 text-secondary" />
                   <h3 className="font-bold text-primary text-lg capitalize">
@@ -437,7 +437,7 @@ export default function ProjectsPage() {
                     </p>
                   </div>
                   <div className="relative group">
-                    <pre className="bg-[#1a2c20] text-[#e8f3ec] p-5 rounded-xl text-sm font-mono leading-relaxed overflow-x-auto max-h-[350px] border border-white/5 thin-scrollbar shadow-inner">
+                    <pre className="bg-[#0a1a0f] text-[#a8d5b5] p-5 rounded-xl text-sm font-mono leading-relaxed overflow-x-auto max-h-[350px] border border-white/5 thin-scrollbar shadow-inner">
                       {decodeBase64(env.file_content)}
                     </pre>
                     <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -452,7 +452,7 @@ export default function ProjectsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-border shadow-inner">
+        <div className="text-center py-20 bg-card rounded-xl border-2 border-dashed border-border shadow-inner">
           <FileCode2 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
           <h3 className="text-lg font-bold text-primary">No Environments Found</h3>
           <p className="text-muted-foreground mt-1 max-w-xs mx-auto">
@@ -494,7 +494,7 @@ export default function ProjectsPage() {
         metaBadge: () => (
           <Badge
             variant="outline"
-            className="rounded-lg text-[9px] font-bold py-0.5 border-neutral-200 text-muted-foreground"
+            className="rounded-lg text-[9px] font-bold py-0.5 border-border text-muted-foreground"
           >
             Created {new Date().toLocaleDateString()}
           </Badge>

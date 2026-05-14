@@ -159,12 +159,15 @@ export default function UserManagement() {
           <DialogTrigger asChild>
             <Button>Add User</Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingUser ? 'Edit User' : 'Add New User'}
-              </DialogTitle>
-            </DialogHeader>
+          <DialogContent className="p-0 border-none bg-background overflow-hidden [&>button]:text-background">
+            <div className="bg-primary p-6 rounded-t-xl text-background">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold tracking-tight">
+                  {editingUser ? 'Edit User' : 'Add New User'}
+                </DialogTitle>
+              </DialogHeader>
+            </div>
+            <div className="p-6">
             <form
               onSubmit={handleSubmit(onSubmit)}
               className="grid gap-4 py-2"
@@ -252,6 +255,7 @@ export default function UserManagement() {
                 <Button type="submit">{editingUser ? 'Update' : 'Save'}</Button>
               </div>
             </form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

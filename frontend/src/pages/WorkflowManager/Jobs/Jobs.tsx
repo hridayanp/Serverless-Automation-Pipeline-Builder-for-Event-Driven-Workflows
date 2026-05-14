@@ -270,10 +270,10 @@ export default function JobsMonitorDashboard() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#fdfdfb] animate-in fade-in duration-500">
+    <div className="min-h-screen bg-background animate-in fade-in duration-500">
       {/* ── Project / Workflow selector bar (matches Tasks / Workflows) ── */}
-      <div className="bg-[#fdfdfb] px-6 lg:px-8 py-4 max-w-[1600px] mx-auto border-b border-neutral-200/60">
-        <div className="bg-white border border-neutral-100 rounded-xl shadow-sm px-5 py-3 flex items-center gap-4 flex-wrap">
+      <div className="bg-background px-6 lg:px-8 py-4 max-w-[1600px] mx-auto border-b border-border">
+        <div className="bg-card border border-border rounded-xl shadow-sm px-5 py-3 flex items-center gap-4 flex-wrap">
           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Project
           </span>
@@ -418,7 +418,7 @@ export default function JobsMonitorDashboard() {
         {/* ── Page heading ── */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight text-[#1a2c20]">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               Job Monitor
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -432,7 +432,7 @@ export default function JobsMonitorDashboard() {
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="bg-white p-5 rounded-xl border border-neutral-100 shadow-sm flex items-center gap-4"
+              className="bg-card p-5 rounded-xl border border-border shadow-sm flex items-center gap-4"
             >
               <div
                 className={`p-2.5 rounded-lg bg-${stat.color}/5 text-${stat.color}`}
@@ -443,7 +443,7 @@ export default function JobsMonitorDashboard() {
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">
                   {stat.label}
                 </p>
-                <p className="text-xl font-bold text-[#1a2c20]">{stat.value}</p>
+                <p className="text-xl font-bold text-foreground">{stat.value}</p>
               </div>
             </div>
           ))}
@@ -461,12 +461,12 @@ export default function JobsMonitorDashboard() {
             </p>
           </div>
         ) : workflowJobs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-5 bg-white rounded-xl border-2 border-dashed border-neutral-100">
-            <div className="w-14 h-14 rounded-xl bg-neutral-50 flex items-center justify-center shadow-inner">
+          <div className="flex flex-col items-center justify-center py-24 gap-5 bg-card rounded-xl border-2 border-dashed border-border">
+            <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center shadow-inner">
               <GitBranch className="w-6 h-6 text-muted-foreground/40" />
             </div>
             <div className="text-center space-y-1">
-              <h3 className="text-base font-bold text-[#1a2c20]">
+              <h3 className="text-base font-bold text-foreground">
                 No jobs found
               </h3>
               <p className="text-xs text-muted-foreground max-w-xs">
@@ -501,7 +501,7 @@ export default function JobsMonitorDashboard() {
                   onClick={() =>
                     navigate('/workflow/job-details', { state: { job } })
                   }
-                  className="cursor-pointer bg-white rounded-xl border border-neutral-100 p-5 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group relative overflow-hidden"
+                  className="cursor-pointer bg-card rounded-xl border border-border p-5 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 group relative overflow-hidden"
                 >
                   {status === 'executing' || status === 'running' ? (
                     <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 animate-pulse" />
@@ -517,10 +517,10 @@ export default function JobsMonitorDashboard() {
                         className={cn(
                           'p-3 rounded-xl',
                           status === 'failed'
-                            ? 'bg-red-50 text-red-600'
+                            ? 'bg-red-500/10 text-red-500'
                             : status === 'executing' || status === 'running'
-                              ? 'bg-blue-50 text-blue-600'
-                              : 'bg-green-50 text-green-600',
+                              ? 'bg-blue-500/10 text-blue-500'
+                              : 'bg-green-500/10 text-green-500',
                         )}
                       >
                         <StatusIcon
@@ -533,7 +533,7 @@ export default function JobsMonitorDashboard() {
                       </div>
                       <div>
                         <div className="flex items-center gap-3">
-                          <div className="text-lg font-bold text-[#1a2c20] group-hover:text-primary transition-colors">
+                          <div className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                             {job.project_name}
                           </div>
                           <Badge
@@ -586,12 +586,12 @@ export default function JobsMonitorDashboard() {
                           setRunToDeleteId(job.run_id);
                           setDeleteDialogOpen(true);
                         }}
-                        className="p-2 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                        className="p-2 rounded-lg text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
                         title="Delete Run"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                      <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="w-5 h-5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
                   </div>
                 </div>

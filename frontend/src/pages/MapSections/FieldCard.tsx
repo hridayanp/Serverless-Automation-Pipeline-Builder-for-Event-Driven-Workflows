@@ -33,7 +33,7 @@ const FieldCard: React.FC<FieldCardProps> = ({
       className={`flex flex-col items-center justify-between md:flex-row gap-3 p-4 rounded-md shadow-sm border ${
         fieldSelected?.id === index
           ? 'border-2 border-primary'
-          : 'border-gray-200'
+          : 'border-border'
       } transition-all duration-200 hover:shadow-md hover:cursor-pointer`}
       onClick={() => dispatch(setFieldSelected(field))}
     >
@@ -41,17 +41,17 @@ const FieldCard: React.FC<FieldCardProps> = ({
       <div className="flex flex-col justify-between w-full md:w-[70%] space-y-1">
         {/* Top-left field */}
         <div className="flex flex-col items-start ">
-          <span className="font-inter font-medium text-[16px] leading-[22px] text-gray-700">
+          <span className="font-inter font-medium text-[16px] leading-[22px] text-foreground/70">
             {field ? field?.field_name : ''}
           </span>
 
-          {/* <span className="font-inter font-medium text-[16px] leading-[22px] text-gray-700">
+          {/* <span className="font-inter font-medium text-[16px] leading-[22px] text-foreground/70">
             {field ? `${field?.area} acres` : ''}
           </span> */}
         </div>
 
         {/* Bottom-left text */}
-        <span className="font-inter leading-[18px] text-gray-900">
+        <span className="font-inter leading-[18px] text-foreground">
           {field ? (
             <>
               <span className="font-semibold text-[16px]">

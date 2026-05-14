@@ -253,7 +253,7 @@ export default function JobDetailsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fdfdfb] animate-in fade-in duration-500 pb-12">
+    <div className="min-h-screen bg-background animate-in fade-in duration-500 pb-12">
       <div className="p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8">
         <SectionHeading
           title={`Job Monitor : ${job?.project_name ?? 'Unknown'}`}
@@ -261,7 +261,7 @@ export default function JobDetailsPage() {
             (
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-muted-foreground">Run ID:</span>
-                <span className="font-mono text-sm bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200">
+                <span className="font-mono text-sm bg-muted/50 px-2 py-0.5 rounded border border-border">
                   {job?.run_id}
                 </span>
                 <Badge
@@ -288,13 +288,13 @@ export default function JobDetailsPage() {
             return (
               <Card
                 key={stat.label}
-                className="bg-white border-neutral-100 shadow-sm"
+                className="bg-card border-border shadow-sm"
               >
                 <CardHeader className="pb-2">
                   <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     {stat.label}
                   </CardDescription>
-                  <CardTitle className="text-2xl font-bold text-[#1a2c20]">
+                  <CardTitle className="text-2xl font-bold text-foreground">
                     {stat.value}
                   </CardTitle>
                 </CardHeader>
@@ -314,7 +314,7 @@ export default function JobDetailsPage() {
           {/* ── LEFT: Execution Path Timeline ── */}
           <div className="lg:col-span-4 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-[#1a2c20] flex items-center gap-2">
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <GitCommit className="w-5 h-5 text-primary" />
                 Execution Flow
               </h2>
@@ -325,7 +325,7 @@ export default function JobDetailsPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-xl border border-neutral-100 p-6 shadow-sm min-h-[400px]">
+            <div className="bg-card rounded-xl border border-border p-6 shadow-sm min-h-[400px]">
               {executionPath.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center py-12 text-muted-foreground italic">
                   <Loader2 className="w-8 h-8 mb-4 animate-spin opacity-20" />
@@ -341,7 +341,7 @@ export default function JobDetailsPage() {
                       {/* Node circle */}
                       <div
                         className={cn(
-                          'absolute left-0 top-1 w-7 h-7 rounded-full border-2 bg-white flex items-center justify-center z-10 transition-all',
+                          'absolute left-0 top-1 w-7 h-7 rounded-full border-2 bg-card flex items-center justify-center z-10 transition-all',
                           step.success
                             ? 'border-green-500 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]'
                             : 'border-red-500 text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]',
@@ -357,7 +357,7 @@ export default function JobDetailsPage() {
                       {/* Content */}
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-bold text-[#1a2c20]">
+                          <h3 className="text-sm font-bold text-foreground">
                             Task Run #{idx + 1}
                           </h3>
                           <span className="text-[10px] font-mono text-muted-foreground">
@@ -391,7 +391,7 @@ export default function JobDetailsPage() {
                     .filter((t: any) => t.status === 'RUNNING')
                     .map((t: any) => (
                       <div key={t.task_id} className="relative pl-10 group">
-                        <div className="absolute left-0 top-1 w-7 h-7 rounded-full border-2 border-blue-500 bg-white flex items-center justify-center z-10 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                        <div className="absolute left-0 top-1 w-7 h-7 rounded-full border-2 border-blue-500 bg-card flex items-center justify-center z-10 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
                           <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
                         </div>
                         <div className="space-y-1">
@@ -415,7 +415,7 @@ export default function JobDetailsPage() {
                         <Flag className="w-3.5 h-3.5" />
                       </div>
                       <div className="pt-1">
-                        <h3 className="text-sm font-bold text-[#1a2c20]">
+                        <h3 className="text-sm font-bold text-foreground">
                           Workflow Finished
                         </h3>
                         <p className="text-xs text-muted-foreground">
@@ -431,11 +431,11 @@ export default function JobDetailsPage() {
 
           {/* ── RIGHT: Task Details Table ── */}
           <div className="lg:col-span-8 space-y-6">
-            <h2 className="text-lg font-bold text-[#1a2c20] flex items-center gap-2">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <Terminal className="w-5 h-5 text-primary" />
               Detailed Task Logs
             </h2>
-            <div className="bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden">
+            <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <DataTable columns={jobRunLogColumns} data={taskLogs} />
             </div>
           </div>
@@ -444,11 +444,11 @@ export default function JobDetailsPage() {
 
       {/* ── LOG VIEWER DIALOG ── */}
       <Dialog open={isLogDialogOpen} onOpenChange={setIsLogDialogOpen}>
-        <DialogContent className="max-w-[1000px] w-[90dvw] max-h-[85dvh] flex flex-col p-0 overflow-hidden bg-[#0d1117] border-neutral-800">
-          <DialogHeader className="p-6 border-b border-neutral-800 bg-[#161b22]">
+        <DialogContent className="max-w-[1000px] w-[90dvw] max-h-[85dvh] flex flex-col p-0 overflow-hidden bg-background border-border shadow-2xl">
+          <DialogHeader className="p-6 border-none bg-primary rounded-t-xl">
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-lg font-bold text-neutral-200 flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/20 text-primary">
+              <DialogTitle className="text-2xl font-bold text-background flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-background/10 text-background">
                   <Terminal className="w-5 h-5" />
                 </div>
                 Execution Pipeline Logs (S3)
@@ -456,7 +456,7 @@ export default function JobDetailsPage() {
             </div>
           </DialogHeader>
           
-          <div className="flex-1 overflow-auto p-6 font-mono text-sm leading-relaxed text-neutral-300 bg-[#0d1117]">
+          <div className="flex-1 overflow-auto p-6 font-mono text-sm leading-relaxed text-foreground/80 bg-background">
             {selectedTaskLogs ? (
               <pre className="whitespace-pre-wrap break-words">
                 {selectedTaskLogs.split('\n').map((line, i) => {
@@ -481,10 +481,10 @@ export default function JobDetailsPage() {
             )}
           </div>
           
-          <div className="p-4 border-t border-neutral-800 bg-[#161b22] flex justify-end">
+          <div className="p-4 border-t border-border bg-muted/30 flex justify-end">
              <button 
                onClick={() => setIsLogDialogOpen(false)}
-               className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-bold rounded-lg transition-colors"
+               className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground/70 text-xs font-bold rounded-lg transition-colors"
              >
                Close Viewer
              </button>

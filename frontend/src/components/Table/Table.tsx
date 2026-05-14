@@ -82,10 +82,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div
-      className="space-y-4"
-      style={{
-        width: '100%',
-      }}
+      className="space-y-4 w-full max-w-full overflow-hidden"
     >
       {toolbar && (
         <TableToolbar
@@ -96,7 +93,7 @@ export function DataTable<TData, TValue>({
           dialogButtonLabel={dialogButtonLabel}
         />
       )}
-      <div className="rounded-md border">
+      <div className="rounded-md border w-full overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
