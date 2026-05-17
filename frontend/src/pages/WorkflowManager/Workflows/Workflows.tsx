@@ -536,7 +536,7 @@ export default function Workflow() {
         // ── Page meta ──────────────────────────────────────────────────────
         title="Workflows"
         subtitle="Overview of created connector and/or form workflows."
-        defaultView="table"
+        defaultView="card"
         // ── Data ───────────────────────────────────────────────────────────
         data={workflowsWithDescription}
         isLoading={loading}

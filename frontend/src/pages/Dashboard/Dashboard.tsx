@@ -57,63 +57,34 @@ export default function Dashboard() {
   };
 
   /* -------------------------------
-     Fetch Tasks
+     Fetch Project Data
   --------------------------------*/
-  const fetchTasks = async (projectId: string) => {
+  const fetchProjectData = async (projectId: string) => {
+    const results: { tasks: any[]; workflows: any[]; jobs: any[] } = { tasks: [], workflows: [], jobs: [] };
     try {
-      const res = await getTasks({ project_id: projectId });
-      const apiData = res?.data;
-      const data =
-        apiData?.status === 'SUCCESS'
-          ? apiData.data
-          : Array.isArray(apiData)
-            ? apiData
-            : [];
-      setTasksData(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error('Failed to fetch tasks:', e);
-      setTasksData([]);
-    }
-  };
+      const [tasksRes, workflowsRes, jobsRes] = await Promise.all([
+        getTasks({ project_id: projectId }).catch(() => ({ data: [] })),
+        getWorkflowsForProject({ project_id: projectId }).catch(() => ({ data: [] })),
+        getWorkflowJobs({ project_id: projectId }).catch(() => ({ data: [] }))
+      ]);
 
-  /* -------------------------------
-     Fetch Workflows
-  --------------------------------*/
-  const fetchWorkflows = async (projectId: string) => {
-    try {
-      const res = await getWorkflowsForProject({ project_id: projectId });
-      const apiData = res?.data;
-      const data =
-        apiData?.status === 'SUCCESS'
-          ? apiData.data
-          : Array.isArray(apiData)
-            ? apiData
-            : [];
-      setWorkflowsData(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error('Failed to fetch workflows:', e);
-      setWorkflowsData([]);
-    }
-  };
+      const tApiData = tasksRes?.data;
+      results.tasks = tApiData?.status === 'SUCCESS' ? tApiData.data : (Array.isArray(tApiData) ? tApiData : []);
 
-  /* -------------------------------
-     Fetch Jobs (Executions)
-  --------------------------------*/
-  const fetchJobs = async (projectId: string) => {
-    try {
-      const res = await getWorkflowJobs({ project_id: projectId });
-      const apiData = res?.data;
-      const data =
-        apiData?.status === 'SUCCESS'
-          ? apiData.data
-          : Array.isArray(apiData)
-            ? apiData
-            : [];
-      setJobsData(Array.isArray(data) ? data : []);
+      const wApiData = workflowsRes?.data;
+      results.workflows = wApiData?.status === 'SUCCESS' ? wApiData.data : (Array.isArray(wApiData) ? wApiData : []);
+
+      const jApiData = jobsRes?.data;
+      results.jobs = jApiData?.status === 'SUCCESS' ? jApiData.data : (Array.isArray(jApiData) ? jApiData : []);
+
     } catch (e) {
-      console.error('Failed to fetch jobs:', e);
-      setJobsData([]);
+      console.error(`Failed to fetch data for project ${projectId}:`, e);
     }
+    return {
+      tasks: Array.isArray(results.tasks) ? results.tasks : [],
+      workflows: Array.isArray(results.workflows) ? results.workflows : [],
+      jobs: Array.isArray(results.jobs) ? results.jobs : []
+    };
   };
 
   /* -------------------------------
@@ -141,17 +112,25 @@ export default function Dashboard() {
         }
       }
 
-      const firstProjectId = projectList[0]?.id;
-      if (!firstProjectId) {
-        toast.error('Project identity mismatch. Please refresh.');
+      if (!projectList || projectList.length === 0) {
+        toast.error('No projects available.');
         return;
       }
 
-      await Promise.all([
-        fetchTasks(firstProjectId),
-        fetchWorkflows(firstProjectId),
-        fetchJobs(firstProjectId),
-      ]);
+      const projectDataResults = await Promise.all(
+        projectList.map(async (project: any) => {
+          if (!project.id) return { tasks: [], workflows: [], jobs: [] };
+          return await fetchProjectData(project.id);
+        })
+      );
+
+      const allTasks = projectDataResults.flatMap(res => res.tasks);
+      const allWorkflows = projectDataResults.flatMap(res => res.workflows);
+      const allJobs = projectDataResults.flatMap(res => res.jobs);
+
+      setTasksData(allTasks);
+      setWorkflowsData(allWorkflows);
+      setJobsData(allJobs);
     } catch (err) {
       console.error('Dashboard load error:', err);
       toast.error('A system sync error occurred. Please try again.');
@@ -364,7 +343,7 @@ export default function Dashboard() {
 
       {/* ── Footer note ── */}
       <p className="mt-8 text-center text-[10px] text-foreground/25 font-medium uppercase tracking-widest">
-        Data reflects the first active project · Click any card to drill down
+        Data reflects all active projects · Click any card to drill down
       </p>
     </div>
   );
