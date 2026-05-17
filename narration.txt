@@ -1,10 +1,10 @@
-The topic of my presentation is, SERVERLESS AUTOMATION 
+My Roll No. is 24A07RES83. The topic of my presentation is, SERVERLESS AUTOMATION 
 PIPELINE BUILDER FOR EVENT-DRIVEN WORKFLOWS.
 
 [Abstract]
 In today's fast-paced digital landscape, managing complex 
 workflows efficiently is crucial. This project introduces a 
-modular, scalable infrastructure that combines a highly reactive 
+modular, scalable infrastructure that combines a reactive 
 frontend interface with a robust serverless backend on AWS. It 
 allows users to visually orchestrate and execute Python-based 
 automation tasks with complete transparency.
@@ -93,10 +93,17 @@ A visual pipeline builder abstracts this complexity into an intuitive graphical 
 quickly understand the flow of data, and visually debug processes, making powerful event-driven automation accessible and transparent.
 
 Q: What is Cloud Security?
-A: Cloud security refers to the set of policies, technologies, and controls deployed to protect data, applications, and infrastructure in the cloud. It operates on a shared responsibility model: the cloud provider secures the underlying physical infrastructure, while the customer is responsible for securing their data, access controls, and application configurations within that environment.
+A: Cloud security refers to the set of policies, technologies, and controls deployed to protect data, 
+applications, and infrastructure in the cloud. It operates on a shared responsibility model: the cloud provider secures the 
+underlying physical infrastructure, while the customer is responsible for securing their data, access controls, and application configurations within that environment.
 
 Q: How secure is a Serverless architecture?
-A: Serverless architectures are inherently very secure because the cloud provider handles all operating system patching, runtime updates, and server maintenance. Each function runs in a completely isolated, ephemeral sandbox that is created and destroyed on-demand. This heavily reduces the attack surface and minimizes the window of opportunity for threats compared to traditional, always-on servers.
+A: Serverless architectures are inherently very secure because the cloud provider handles all operating system patching, runtime 
+updates, and server maintenance. Each function runs in a completely isolated, ephemeral sandbox that is created and destroyed on-demand. 
+This heavily reduces the attack surface and minimizes the window of opportunity for threats compared to traditional, always-on servers.
 
 Q: How secure is our specific platform?
-A: Our platform utilizes multiple layers of security. We enforce the principle of least privilege using AWS IAM, ensuring that our serverless functions only have access to the specific resources they need. Data at rest is encrypted in S3 and DynamoDB, and data in transit is secured via HTTPS through API Gateway. Additionally, because our task execution environments are ephemeral, no residual state or sensitive data is left behind after a workflow finishes, ensuring strict data isolation.
+A: Our platform utilizes multiple layers of security. We enforce the principle of least privilege using AWS IAM, ensuring that our serverless 
+functions only have access to the specific resources they need. Data at rest is encrypted in S3 and DynamoDB, and data in transit is secured via
+ HTTPS through API Gateway. Additionally, because our task execution environments are ephemeral, no residual state or sensitive data is left behind 
+ after a workflow finishes, ensuring strict data isolation.
