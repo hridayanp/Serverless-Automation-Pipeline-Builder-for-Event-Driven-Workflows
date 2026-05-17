@@ -96,7 +96,15 @@ export default function JobsMonitorDashboard() {
       setWorkflows(workflowsData);
 
       if (workflowsData.length > 0) {
-        const wfToSelect = targetWfName || location.state?.workflowName || workflowsData[0].workflow_name;
+        let wfToSelect = targetWfName || workflowsData[0].workflow_name;
+        
+        if (location.state?.workflowName) {
+           const exists = workflowsData.some((wf: any) => wf.workflow_name === location.state.workflowName);
+           if (exists) {
+              wfToSelect = location.state.workflowName;
+           }
+        }
+
         setSelectedWorkflowName(wfToSelect);
       } else {
         setSelectedWorkflowName(null);
@@ -121,28 +129,38 @@ export default function JobsMonitorDashboard() {
           let targetWorkflowName: string | undefined = undefined;
 
           if (!targetProjectId) {
-            targetProjectId = projectData[0].id.toString();
-            
-            // Look for a project AND workflow that has jobs
-            const results = await Promise.all(
-              projectData.map(async (proj: any) => {
-                const jobsRes = await getWorkflowJobs({ project_id: proj.id }).catch(() => null);
-                const jobsData = jobsRes?.data?.data || jobsRes?.data;
-                const hasJobs = Array.isArray(jobsData) && jobsData.length > 0;
-                let firstJobWfName = undefined;
-                if (hasJobs) {
-                  // Find the workflow name of the first job to ensure we select a workflow that actually has jobs
-                  firstJobWfName = jobsData[0].workflow_name;
-                }
-                return { id: proj.id, hasJobs, firstJobWfName };
-              })
-            );
+            const systemHealthProject = projectData.find((p: any) => p.name === 'System Health Monitor');
 
-            for (const res of results) {
-              if (res.hasJobs) {
-                targetProjectId = res.id.toString();
-                targetWorkflowName = res.firstJobWfName;
-                break;
+            if (systemHealthProject) {
+              targetProjectId = systemHealthProject.id.toString();
+              const jobsRes = await getWorkflowJobs({ project_id: targetProjectId }).catch(() => null);
+              const jobsData = jobsRes?.data?.data || jobsRes?.data;
+              if (Array.isArray(jobsData) && jobsData.length > 0) {
+                targetWorkflowName = jobsData[0].workflow_name;
+              }
+            } else {
+              targetProjectId = projectData[0].id.toString();
+              
+              // Look for a project AND workflow that has jobs
+              const results = await Promise.all(
+                projectData.map(async (proj: any) => {
+                  const jobsRes = await getWorkflowJobs({ project_id: proj.id }).catch(() => null);
+                  const jobsData = jobsRes?.data?.data || jobsRes?.data;
+                  const hasJobs = Array.isArray(jobsData) && jobsData.length > 0;
+                  let firstJobWfName = undefined;
+                  if (hasJobs) {
+                    firstJobWfName = jobsData[0].workflow_name;
+                  }
+                  return { id: proj.id, hasJobs, firstJobWfName };
+                })
+              );
+
+              for (const res of results) {
+                if (res.hasJobs) {
+                  targetProjectId = res.id.toString();
+                  targetWorkflowName = res.firstJobWfName;
+                  break;
+                }
               }
             }
           }
