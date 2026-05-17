@@ -1,0 +1,71 @@
+The topic of my presentation is, SERVERLESS AUTOMATION 
+PIPELINE BUILDER FOR EVENT-DRIVEN WORKFLOWS.
+
+[Abstract]
+In today's fast-paced digital landscape, managing complex 
+workflows efficiently is crucial. This project introduces a 
+modular, scalable infrastructure that combines a highly reactive 
+frontend interface with a robust serverless backend on AWS. It 
+allows users to visually orchestrate and execute Python-based 
+automation tasks with complete transparency.
+
+[Problem Definition]
+Traditionally, setting up automation pipelines requires 
+significant operational overhead, involving complex server 
+management, rigid execution environments, and difficult scaling. 
+The problem we aimed to solve is the lack of a flexible, 
+low-maintenance platform where users can easily define, connect,
+ and monitor dependent tasks without worrying about provisioning 
+ or maintaining the underlying infrastructure.
+
+[Solution Strategy]
+To tackle this, we adopted a Serverless Microservices 
+Architecture. By leveraging AWS native technologies—specifically
+ Lambda, API Gateway, DynamoDB, and S3—we eliminated the need for
+  server management. We decoupled the workflow metadata from the 
+  actual execution logic, creating a highly responsive, 
+  event-driven system that scales automatically and remains 
+  incredibly cost-effective.
+
+[Methodology]
+Our methodology revolves around a custom recursive 
+orchestration engine. Instead of relying on static step 
+functions, we represent workflows as dynamic JSON trees, 
+similar to Directed Acyclic Graphs. When a workflow is 
+triggered, the system recursively traverses this tree. 
+We use a 'download-and-run' approach: scripts are fetched 
+on-demand from S3 into an ephemeral Lambda sandbox, executed, 
+and their outcomes—whether success or failure—determine the next 
+logical branching path.
+
+[Implementation]
+From an implementation standpoint, the user flow is entirely 
+seamless. Through an interactive React frontend, users create 
+projects, upload Python scripts, and use a drag-and-drop graph 
+interface to assemble their workflows. Once executed, 
+the backend dynamically spins up isolated Lambda instances to 
+run these tasks asynchronously. Real-time telemetry and 
+execution logs are instantly fed back to a live monitoring 
+dashboard.
+
+[Results and Discussion]
+Our integrated testing confirmed the system's high reliability. 
+The frontend visual builder and real-time monitor demonstrated 
+accurate synchronization with backend states. The platform 
+successfully manages sequential and conditional workflows,
+ providing a dependable real-time feedback loop. While
+  large-scale parallel distribution is a goal for future 
+  scaling, the core orchestration engine currently performs 
+  deterministically and flawlessly under its defined scope.
+
+[Summary & Conclusion]
+In conclusion, we have built a fully functional orchestration 
+platform with minimal operational overhead. We successfully
+ integrated a sophisticated visual builder with an asynchronous 
+ serverless backend, ensuring complete execution integrity and
+  traceability. This project establishes a powerful, modular 
+  foundation for scalable, enterprise-grade automation, proving 
+  that complex event-driven pipelines can be managed both 
+  visually and efficiently using modern serverless technologies. 
+
+Thank you.

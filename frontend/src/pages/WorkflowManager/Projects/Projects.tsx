@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -84,7 +85,9 @@ export default function ProjectsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [loadingEnv, setLoadingEnv] = useState(false);
-  const [selectedEnvironments, setSelectedEnvironments] = useState<Environment[]>([]);
+  const [selectedEnvironments, setSelectedEnvironments] = useState<
+    Environment[]
+  >([]);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -248,7 +251,9 @@ export default function ProjectsPage() {
   const stats = useMemo(() => {
     const projectList = Array.isArray(projects) ? projects : [];
 
-    const uniqueFolders = new Set(projectList.map((p: Project) => p.script_folder)).size;
+    const uniqueFolders = new Set(
+      projectList.map((p: Project) => p.script_folder),
+    ).size;
     const documented = projectList.filter(
       (p: Project) => p.description && p.description.length > 0,
     ).length;
@@ -332,7 +337,11 @@ export default function ProjectsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Created At', value: new Date().toLocaleDateString(), icon: Activity },
+          {
+            label: 'Created At',
+            value: new Date().toLocaleDateString(),
+            icon: Activity,
+          },
           { label: 'Status', value: 'Active', icon: ShieldCheck },
           { label: 'Integrations', value: 'AWS Lambda', icon: Settings2 },
         ].map((item, i) => (
@@ -405,7 +414,9 @@ export default function ProjectsPage() {
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                           Method
                         </p>
-                        <p className="text-primary font-semibold">{env.method}</p>
+                        <p className="text-primary font-semibold">
+                          {env.method}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -418,7 +429,9 @@ export default function ProjectsPage() {
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                           Config File
                         </p>
-                        <p className="text-primary font-semibold">{env.file_name}</p>
+                        <p className="text-primary font-semibold">
+                          {env.file_name}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -454,7 +467,9 @@ export default function ProjectsPage() {
       ) : (
         <div className="text-center py-20 bg-card rounded-xl border-2 border-dashed border-border shadow-inner">
           <FileCode2 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-primary">No Environments Found</h3>
+          <h3 className="text-lg font-bold text-primary">
+            No Environments Found
+          </h3>
           <p className="text-muted-foreground mt-1 max-w-xs mx-auto">
             This project has no execution environments configured yet.
           </p>
@@ -486,7 +501,7 @@ export default function ProjectsPage() {
       // ── Card config ────────────────────────────────────────────────────────
       cardConfig={{
         titleKey: 'name',
-        subtitleKey: 'id',           // renders as "UUID: abc123..."
+        subtitleKey: 'id', // renders as "UUID: abc123..."
         descriptionKey: 'description',
         descriptionFallback:
           'Enterprise-grade serverless orchestration pipeline designed for event-driven workflows and scalable automation.',
