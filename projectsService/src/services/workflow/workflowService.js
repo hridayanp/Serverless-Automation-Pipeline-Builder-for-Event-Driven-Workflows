@@ -21,7 +21,9 @@ export const createWorkflow = async (workflow) => {
   }
 
   // Ensure Project exists
-  const project = await getItem(process.env.TABLE_PROJECTS, { id: workflow.project_id });
+  const project = await getItem(process.env.TABLE_PROJECTS, {
+    id: workflow.project_id,
+  });
   if (!project) throw new Error('Project not found');
 
   const id = uuidv4();
@@ -110,7 +112,9 @@ export const fetchLogs = async ({ workflow_id }) => {
 
   return runs.map((run) => {
     const workflow = workflows.find((w) => w.id === run.workflow_id);
-    const project = workflow ? projects.find((p) => p.id === workflow.project_id) : null;
+    const project = workflow
+      ? projects.find((p) => p.id === workflow.project_id)
+      : null;
 
     const runTaskLogs = taskLogs
       .filter((t) => t.run_id === run.run_id)
@@ -126,16 +130,16 @@ export const fetchLogs = async ({ workflow_id }) => {
         };
       });
 
-      return {
-        run_id: run.run_id,
-        workflow_id: run.workflow_id,
-        project_name: project?.name,
-        workflow_status: run.status,
-        execution_path: run.execution_path || [],
-        start_date: run.start_date,
-        end_date: run.end_date,
-        task_logs: runTaskLogs,
-      };
+    return {
+      run_id: run.run_id,
+      workflow_id: run.workflow_id,
+      project_name: project?.name,
+      workflow_status: run.status,
+      execution_path: run.execution_path || [],
+      start_date: run.start_date,
+      end_date: run.end_date,
+      task_logs: runTaskLogs,
+    };
   });
 };
 
@@ -247,15 +251,15 @@ export const deleteWorkflowRun = async (runId) => {
   // 1. Delete associated task logs
   const taskLogs = await scanTable(TASK_LOGS);
   const relatedTaskLogs = taskLogs.filter((tl) => tl.run_id === runId);
-  
+
   if (relatedTaskLogs.length > 0) {
     await Promise.all(
-      relatedTaskLogs.map((tl) => 
-        deleteItem(TASK_LOGS, { 
-          run_id: tl.run_id, 
-          task_id: tl.task_id 
-        })
-      )
+      relatedTaskLogs.map((tl) =>
+        deleteItem(TASK_LOGS, {
+          run_id: tl.run_id,
+          task_id: tl.task_id,
+        }),
+      ),
     );
   }
 
