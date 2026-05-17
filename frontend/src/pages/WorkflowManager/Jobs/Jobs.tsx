@@ -88,7 +88,26 @@ export default function JobsMonitorDashboard() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [runToDeleteId, setRunToDeleteId] = useState<string | null>(null);
 
-  // ── Fetch projects on mount (identical to original) ───────────────────────
+  // ── Fetch workflows for a selected project ─────────
+  const fetchWorkflows = async (projectId: string, targetWfName?: string) => {
+    try {
+      const res = await getWorkflowsForProject({ project_id: projectId });
+      const workflowsData = res?.data?.data || [];
+      setWorkflows(workflowsData);
+
+      if (workflowsData.length > 0) {
+        const wfToSelect = targetWfName || location.state?.workflowName || workflowsData[0].workflow_name;
+        setSelectedWorkflowName(wfToSelect);
+      } else {
+        setSelectedWorkflowName(null);
+      }
+    } catch (e) {
+      console.error('Error fetching workflows:', e);
+      toast.error('Error fetching workflows');
+    }
+  };
+
+  // ── Fetch projects on mount ───────────────────────
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -96,12 +115,40 @@ export default function JobsMonitorDashboard() {
         const res = await getProjects();
         if (Array.isArray(res?.data) && res.data.length > 0) {
           dispatch(setProjectState(res.data));
+          const projectData = res.data;
 
-          const targetProjectId =
-            location.state?.projectId?.toString() || res.data[0].id.toString();
+          let targetProjectId = location.state?.projectId?.toString();
+          let targetWorkflowName: string | undefined = undefined;
+
+          if (!targetProjectId) {
+            targetProjectId = projectData[0].id.toString();
+            
+            // Look for a project AND workflow that has jobs
+            const results = await Promise.all(
+              projectData.map(async (proj: any) => {
+                const jobsRes = await getWorkflowJobs({ project_id: proj.id }).catch(() => null);
+                const jobsData = jobsRes?.data?.data || jobsRes?.data;
+                const hasJobs = Array.isArray(jobsData) && jobsData.length > 0;
+                let firstJobWfName = undefined;
+                if (hasJobs) {
+                  // Find the workflow name of the first job to ensure we select a workflow that actually has jobs
+                  firstJobWfName = jobsData[0].workflow_name;
+                }
+                return { id: proj.id, hasJobs, firstJobWfName };
+              })
+            );
+
+            for (const res of results) {
+              if (res.hasJobs) {
+                targetProjectId = res.id.toString();
+                targetWorkflowName = res.firstJobWfName;
+                break;
+              }
+            }
+          }
 
           setSelectedProjectId(targetProjectId);
-          await fetchWorkflows(targetProjectId);
+          await fetchWorkflows(targetProjectId, targetWorkflowName);
         }
       } catch (e) {
         console.error('Error fetching projects:', e);
@@ -113,26 +160,6 @@ export default function JobsMonitorDashboard() {
 
     fetchProjects();
   }, [dispatch, location.state]);
-
-  // ── Fetch workflows for a selected project (identical to original) ─────────
-  const fetchWorkflows = async (projectId: string) => {
-    try {
-      const res = await getWorkflowsForProject({ project_id: projectId });
-      const workflowsData = res?.data?.data || [];
-      setWorkflows(workflowsData);
-
-      if (workflowsData.length > 0) {
-        const targetWorkflowName =
-          location.state?.workflowName || workflowsData[0].workflow_name;
-        setSelectedWorkflowName(targetWorkflowName);
-      } else {
-        setSelectedWorkflowName(null);
-      }
-    } catch (e) {
-      console.error('Error fetching workflows:', e);
-      toast.error('Error fetching workflows');
-    }
-  };
 
   // ── Fetch jobs when workflow / dates change (identical to original) ─────────
   useEffect(() => {
@@ -253,19 +280,7 @@ export default function JobsMonitorDashboard() {
     ];
   }, [workflowJobs]);
 
-  useEffect(() => {
-    if (!selectedProjectId && projects.length > 0) {
-      const firstProjectId = projects[0].id.toString();
-      setSelectedProjectId(firstProjectId);
-      fetchWorkflows(firstProjectId);
-    }
-  }, [projects]);
-
-  useEffect(() => {
-    if (!selectedWorkflowName && workflows.length > 0) {
-      setSelectedWorkflowName(workflows[0].workflow_name);
-    }
-  }, [workflows]);
+  // Redundant fallback effects removed
 
   // ── Render ────────────────────────────────────────────────────────────────
 

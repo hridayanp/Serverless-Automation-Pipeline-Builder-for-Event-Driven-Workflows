@@ -66,7 +66,7 @@ export default function Tasks() {
   const [tasksData, setTasksData] = useState<Task[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<
     string | undefined
-  >(projects?.[0]?.id ? String(projects[0].id) : undefined);
+  >(undefined);
 
   // Detail dialog state (view task)
   const [viewTask, setViewTask] = useState<Task | null>(null);
@@ -76,12 +76,7 @@ export default function Tasks() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [taskToDeleteId, setTaskToDeleteId] = useState<string | null>(null);
 
-  // ── Sync selectedProjectId when Redux loads projects ──────────────────────
-  useEffect(() => {
-    if (projects?.length > 0 && !selectedProjectId) {
-      setSelectedProjectId(String(projects[0].id));
-    }
-  }, [projects]);
+  // Use effect removed because initialization is handled in fetchProjectsRef
 
   // ── Fetch projects (ref-wrapped, identical to original) ───────────────────
   const fetchProjectsRef = useRef(async () => {
@@ -91,6 +86,25 @@ export default function Tasks() {
       const apiData = res?.data;
       if (apiData?.status === 'SUCCESS' && Array.isArray(apiData?.data)) {
         dispatch(setProjects(apiData.data));
+        const projectData = apiData.data;
+
+        if (projectData.length > 0) {
+          let targetProjId = String(projectData[0].id);
+          const results = await Promise.all(
+            projectData.map(async (proj: any) => {
+              const res = await getTasks({ project_id: proj.id }).catch(() => null);
+              return { id: proj.id, data: res?.data?.data, status: res?.data?.status };
+            })
+          );
+
+          for (const res of results) {
+            if (res.status === 'SUCCESS' && Array.isArray(res.data) && res.data.length > 0) {
+              targetProjId = String(res.id);
+              break;
+            }
+          }
+          setSelectedProjectId(targetProjId);
+        }
       } else {
         toast.error(apiData?.message || 'No projects found');
         dispatch(setProjects([]));

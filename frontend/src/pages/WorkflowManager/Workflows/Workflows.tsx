@@ -82,13 +82,30 @@ export default function Workflow() {
 
       if (Array.isArray(projectData) && projectData.length > 0) {
         dispatch(setProjectState(projectData));
-        const firstProjectId = String(projectData[0].id);
-        setSelectedProjectId(firstProjectId);
-        fetchWorkflows(firstProjectId);
+        setLoading(true);
+
+        let targetProjId = String(projectData[0].id);
+        const results = await Promise.all(
+          projectData.map(async (proj: any) => {
+            const res = await getWorkflowsForProject({ project_id: proj.id }).catch(() => null);
+            return { id: proj.id, data: res?.data?.data, status: res?.status };
+          })
+        );
+
+        for (const res of results) {
+          if (res.status === 200 && Array.isArray(res.data) && res.data.length > 0) {
+            targetProjId = String(res.id);
+            break;
+          }
+        }
+
+        setSelectedProjectId(targetProjId);
+        fetchWorkflows(targetProjId);
       }
     } catch (e) {
       console.error('Error fetching projects:', e);
       toast.error('Failed to load projects');
+      setLoading(false);
     }
   });
 
