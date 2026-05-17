@@ -69,3 +69,34 @@ platform with minimal operational overhead. We successfully
   visually and efficiently using modern serverless technologies. 
 
 Thank you.
+
+---
+[Expected Q&A Reference]
+
+Q: What exactly is "the Cloud"?
+A: The cloud refers to computing resources—like servers, storage, databases, and software—that are accessed over the internet 
+rather than hosted locally on a personal computer or an on-premise data center. It allows organizations to rent computing power and storage from a cloud provider.
+
+Q: Why use the Cloud for this project?
+A: The cloud provides virtually limitless scalability, high availability, and reliability. By leveraging the cloud, we avoid the 
+upfront capital costs of buying physical hardware and eliminate the burden of managing and maintaining local infrastructure, allowing us 
+to focus entirely on building the application logic.
+
+Q: Why choose a "Serverless" architecture?
+A: Serverless computing takes the benefits of the cloud a step further by abstracting away server management completely. It 
+scales automatically to zero when there's no traffic and provisions resources instantly when an event triggers. It follows a strict 
+pay-as-you-go model, meaning we only pay for the exact milliseconds our code is running, which drastically reduces both operational overhead and costs.
+
+Q: Why build a visual Pipeline Builder?
+A: Automation workflows often involve complex dependencies, conditional logic, and error handling that are difficult to manage in pure code. 
+A visual pipeline builder abstracts this complexity into an intuitive graphical interface. It empowers users to easily map out task relationships, 
+quickly understand the flow of data, and visually debug processes, making powerful event-driven automation accessible and transparent.
+
+Q: What is Cloud Security?
+A: Cloud security refers to the set of policies, technologies, and controls deployed to protect data, applications, and infrastructure in the cloud. It operates on a shared responsibility model: the cloud provider secures the underlying physical infrastructure, while the customer is responsible for securing their data, access controls, and application configurations within that environment.
+
+Q: How secure is a Serverless architecture?
+A: Serverless architectures are inherently very secure because the cloud provider handles all operating system patching, runtime updates, and server maintenance. Each function runs in a completely isolated, ephemeral sandbox that is created and destroyed on-demand. This heavily reduces the attack surface and minimizes the window of opportunity for threats compared to traditional, always-on servers.
+
+Q: How secure is our specific platform?
+A: Our platform utilizes multiple layers of security. We enforce the principle of least privilege using AWS IAM, ensuring that our serverless functions only have access to the specific resources they need. Data at rest is encrypted in S3 and DynamoDB, and data in transit is secured via HTTPS through API Gateway. Additionally, because our task execution environments are ephemeral, no residual state or sensitive data is left behind after a workflow finishes, ensuring strict data isolation.
