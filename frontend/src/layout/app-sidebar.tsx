@@ -32,17 +32,17 @@ import {
 // const ACCENT  = '#d4edda';   // emerald tint
 
 const navMain = [
-  { title: 'Dashboard', url: '/dashboard',         icon: LayoutDashboard },
-  { title: 'Projects',  url: '/workflow/projects', icon: FolderKanban    },
-  { title: 'Tasks',     url: '/workflow/tasks',    icon: ClipboardList   },
-  { title: 'Workflow',  url: '/workflow/details',  icon: Workflow        },
-  { title: 'Jobs',      url: '/workflow/jobs',     icon: ListTree        },
+  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+  { title: 'Projects', url: '/workflow/projects', icon: FolderKanban },
+  { title: 'Tasks', url: '/workflow/tasks', icon: ClipboardList },
+  { title: 'Workflow', url: '/workflow/details', icon: Workflow },
+  { title: 'Jobs', url: '/workflow/jobs', icon: ListTree },
 ];
 
 const navSecondary = [
-  { title: 'Settings', url: '/settings', icon: Settings },
-  { title: 'Profile',  url: '/profile',  icon: User2    },
-  { title: 'Logout',   icon: LogOut,     action: 'logout' },
+  // { title: 'Settings', url: '/settings', icon: Settings },
+  // { title: 'Profile',  url: '/profile',  icon: User2    },
+  { title: 'Logout', icon: LogOut, action: 'logout' },
 ];
 
 /* ── NavItem ────────────────────────────────────────────────────────────── */
@@ -61,16 +61,14 @@ function NavItem({
     <div
       onClick={onClick}
       className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 relative ${
-        active 
-          ? 'bg-primary text-primary-foreground' 
+        active
+          ? 'bg-primary text-primary-foreground'
           : 'bg-transparent text-foreground/70 hover:bg-accent hover:text-accent-foreground'
       }`}
     >
       {/* active pill */}
       {active && (
-        <span
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full bg-primary-foreground/50"
-        />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full bg-primary-foreground/50" />
       )}
 
       <Icon
@@ -78,9 +76,7 @@ function NavItem({
         strokeWidth={active ? 2.5 : 2}
       />
 
-      <span
-        className="text-[13px] font-bold tracking-wide truncate flex-1"
-      >
+      <span className="text-[13px] font-bold tracking-wide truncate flex-1">
         {item.title}
       </span>
 
@@ -91,13 +87,17 @@ function NavItem({
   );
 
   if (onClick) return inner;
-  return <Link to={(item as any).url} className="block no-underline">{inner}</Link>;
+  return (
+    <Link to={(item as any).url} className="block no-underline">
+      {inner}
+    </Link>
+  );
 }
 
 /* ── AppSidebar ─────────────────────────────────────────────────────────── */
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.clear();
@@ -105,32 +105,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar
-      {...props}
-      collapsible="icon"
-      className="border-r border-border"
-    >
+    <Sidebar {...props} collapsible="icon" className="border-r border-border">
       {/* ── Logo / Brand ───────────────────────────────────────────────── */}
       <SidebarHeader className="px-4 py-4 border-b border-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <Link to="#" className="flex items-center gap-3 no-underline">
               {/* icon square — same accent palette as stat cards */}
-              <div
-                className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0 bg-primary"
-              >
-                <GalleryVerticalEnd className="w-4 h-4 text-primary-foreground" strokeWidth={2.2} />
+              <div className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0 bg-primary">
+                <GalleryVerticalEnd
+                  className="w-4 h-4 text-primary-foreground"
+                  strokeWidth={2.2}
+                />
               </div>
 
               <div className="flex flex-col leading-none gap-0.5">
-                <span
-                  className="text-[15px] font-black tracking-tight text-foreground"
-                >
+                <span className="text-[15px] font-black tracking-tight text-foreground">
                   Dataflow
                 </span>
-                <span
-                  className="text-[9px] font-bold uppercase tracking-[0.2em] text-foreground/50"
-                >
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-foreground/50">
                   v1.0.0
                 </span>
               </div>
@@ -143,9 +136,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* ── Primary nav ──────────────────────────────────────────────── */}
         <SidebarGroup className="px-3">
           {/* section label */}
-          <p
-            className="text-[9px] font-black uppercase tracking-[0.28em] mb-3 px-3 text-foreground/40"
-          >
+          <p className="text-[9px] font-black uppercase tracking-[0.28em] mb-3 px-3 text-foreground/40">
             Navigation
           </p>
 
@@ -163,9 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         {/* ── Secondary nav ────────────────────────────────────────────── */}
         <SidebarGroup className="px-3 mt-auto mb-3">
-          <p
-            className="text-[9px] font-black uppercase tracking-[0.28em] mb-3 px-3 text-foreground/40"
-          >
+          <p className="text-[9px] font-black uppercase tracking-[0.28em] mb-3 px-3 text-foreground/40">
             Account
           </p>
 
