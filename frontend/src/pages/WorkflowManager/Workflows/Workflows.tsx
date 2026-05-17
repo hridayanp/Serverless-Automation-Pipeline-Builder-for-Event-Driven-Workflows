@@ -291,7 +291,7 @@ export default function Workflow() {
                   value !== null
                 ) {
                   return (
-                    <div className="p-2 rounded bg-muted text-sm text-foreground space-y-1">
+                    <div className="p-2 rounded bg-muted text-sm text-foreground space-y-1 max-w-[200px] whitespace-normal break-words">
                       <div>
                         <span className="font-medium">Cron:</span> {value.cron}
                       </div>
