@@ -236,7 +236,15 @@ export default function Tasks() {
   const columns = useMemo<ColumnDef<Task>[]>(
     () => [
       { accessorKey: 'name', header: 'Name' },
-      { accessorKey: 'description', header: 'Description' },
+      {
+        accessorKey: 'description',
+        header: 'Description',
+        cell: ({ row }) => (
+          <div className="max-w-[200px] whitespace-normal break-words text-muted-foreground text-xs">
+            {row.original.description || '-'}
+          </div>
+        ),
+      },
       {
         accessorKey: 'file_data_s3_key',
         header: 'Script File',
